@@ -1,4 +1,7 @@
+import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
   return (
@@ -95,6 +98,7 @@ export default function Home() {
           />
           Go to nextjs.org →
         </a>
+        <Button ><Link href='/auth'>Signup/Login</Link> </Button>
       </footer>
     </div>
   );

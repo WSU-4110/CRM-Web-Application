@@ -31,7 +31,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen`}>
 
         <AuthProvider>
-          <div>
+          <div className="flex flex-row w-full h-full">
             <SidebarDemo />
             {children}
           </div>

@@ -1,32 +1,33 @@
-import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore'; // necessary libraries
-import { getAuth, signInWithCustomToken } from 'firebase/auth'; // necessary authentication library for signin
-import { NextApiRequest, NextApiResponse } from 'next'; // type annotations
+import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore'; // Firestore libraries
+import { getAuth, signInWithCustomToken } from 'firebase/auth'; // Firebase Authentication library
+import { NextResponse } from 'next/server'; // NextResponse for Next.js API routes
 const database = getFirestore(); // Initialize Firestore
 const authentication = getAuth(); // Initialize Firebase Authentication
-export default async function authhandler(req: NextApiRequest, res: NextApiResponse) { // function declaration with type annotations
-  if (req.method === 'POST') { // checks HTTP method
-    const { usertoken, userdoc } = req.body; // token and document to be used
-    try { // Sign in with the custom token to authenticate the user
-      await signInWithCustomToken(authentication, usertoken); // authenticate user with the token
-      // Check if the user is signed in successfully
-      const user = authentication.currentUser;
-      if (!user) {
-        return res.status(401).json({ message: 'User authentication failed. No user is currently signed in.' }); }
-      const userid = user.uid; // Get user ID from the authenticated user
-      const docRef = await addDoc(collection(database, 'users'), { // adds a document to the users collection
-        id: userid, // user id
-        ...userdoc, // document to be used
-        creationdate: serverTimestamp(), // creates a creation date field and stores the time
-      });
-      const createdUserDoc = { id: docRef.id, ...userdoc }; // Prepare the created document data with ID
-      return res.status(201).json({ 
-        message: 'Congratulations! A user document has been successfully created', 
-        document: createdUserDoc // success message through JSON
-      });
-    } catch (error) { // error portion of try block
-      return res.status(401).json({ message: 'Unverified call has been made', error: error.message }); // if verification fails
-    }
-  } else { // if HTTP check fails
-    res.setHeader('Allow', ['POST']); // designates that only POST requests are allowed
-    return res.status(405).end(`The designated method ${req.method} cannot be used.`); // message that showcases that the method is not allowed 
-  }}
+export async function POST(req: Request) { // Handler function for POST request
+  try {
+    const { usertoken, userdoc } = await req.json(); // Parse JSON body from request
+    // Authenticate user with the custom token
+    await signInWithCustomToken(authentication, usertoken); 
+    const user = authentication.currentUser; // Retrieve authenticated user
+    if (!user) { // Check if the user is authenticated
+      return NextResponse.json({ message: 'User authentication failed. No user is currently signed in.' }, { status: 401 });}
+    const userid = user.uid; // Get user ID from the authenticated user
+    // Add a document to the 'users' collection
+    const docRef = await addDoc(collection(database, 'users'), {
+      id: userid,
+      ...userdoc, // Spread the userdoc object into the document
+      creationdate: serverTimestamp(), // Timestamp for document creation
+    });
+    const createdUserDoc = { id: docRef.id, ...userdoc }; // Prepare created document data
+    return NextResponse.json({ 
+      message: 'Congratulations! A user document has been successfully created', 
+      document: createdUserDoc },
+      { status: 201 }); // Return success response with status 201
+  } catch (error) {
+    return NextResponse.json({ 
+      message: 'Unverified call has been made', 
+      error: error.message },
+      { status: 401 });}} // Error response with status 401
+// Export GET handler as an empty response to maintain similarity to route.ts structure
+export async function GET() {
+  return NextResponse.json({ message: 'GET method is not supported for this route.' }, { status: 405 });}

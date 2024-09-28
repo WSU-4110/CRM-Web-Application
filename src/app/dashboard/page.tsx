@@ -1,10 +1,11 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { auth } from '../../../firebaseConfig';
+import { auth } from '../../firebaseConfig';
 import { useAuth } from '../contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { DashboardDemo } from '@/components/DashboardDemo';
 
 const Dashboard = () => {
   const router = useRouter();
@@ -40,16 +41,10 @@ const Dashboard = () => {
   };
 
   return (
-    <Card className="w-[350px] mx-auto mt-10">
-      <CardHeader>
-        <CardTitle>Dashboard</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <p>Welcome, {user.email}!</p>
-        <p>You're now logged in to your dashboard.</p>
-        <Button className="mt-4" onClick={handleSignOut}>Sign Out</Button>
-      </CardContent>
-    </Card>
+    <div>
+      <Button className="mt-4" onClick={handleSignOut}>Sign Out</Button>
+      <DashboardDemo />
+    </div>
   );
 };
 

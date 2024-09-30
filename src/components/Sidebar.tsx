@@ -9,11 +9,11 @@ import {
 } from "@tabler/icons-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import Image from "next/image";
-import { cn } from "@/lib/utils";
-import { getAuth } from "firebase/auth";
+
+import { useAuth } from "@/app/contexts/AuthContext";
 
 export function SidebarDemo() {
+  
   const links = [
     {
       label: "Dashboard",
@@ -75,13 +75,9 @@ export function SidebarDemo() {
   );
 }
 export const Logo = () => {
-  const auth=getAuth();
-  let email = '';
-//@ts-ignore
-if(auth.currentUser){
-  //@ts-ignore
-  email = auth.currentUser.email;
-}
+
+  const { user } = useAuth();
+
 
   return (
     <Link
@@ -94,9 +90,9 @@ if(auth.currentUser){
         animate={{ opacity: 1 }}
         className="font-medium text-black dark:text-white whitespace-pre"
       >
-        {/* @ts-ignore */}
-        {email && email[0] && email[0].toUpperCase()}
-      
+
+      {user?.email}
+
       </motion.span>
     </Link>
   );
@@ -111,4 +107,5 @@ export const LogoIcon = () => {
     </Link>
   );
 };
+
 

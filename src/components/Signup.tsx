@@ -1,8 +1,7 @@
 'use client'
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '../app/contexts/AuthContext';
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { getAuth, createUserWithEmailAndPassword, User } from 'firebase/auth';
 import { z } from 'zod';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,16 +9,14 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2 } from 'lucide-react';
 
-// Define the schema for form validation
 const schema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
   password: z.string().min(6, { message: "Password must be at least 6 characters long" }),
 });
 
-const LoginSignup = () => {
+const Signup = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isLogin, setIsLogin] = useState(true);
   const [error, setError] = useState('');
   const [validationErrors, setValidationErrors] = useState<{ [key: string]: string }>({});
   const [isLoading, setIsLoading] = useState(false);
@@ -43,6 +40,31 @@ const LoginSignup = () => {
     }
   };
 
+  const createUserDocument = async (user: User) => {
+    try {
+      const response = await fetch('/api/create-user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user.uid,
+          email: user.email,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create user document');
+      }
+
+      const data = await response.json();
+      console.log('User document created:', data);
+    } catch (error) {
+      console.error('Error creating user document:', error);
+      throw error;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -54,15 +76,13 @@ const LoginSignup = () => {
     setIsLoading(true);
 
     try {
-      if (isLogin) {
-        await signInWithEmailAndPassword(auth, email, password);
-      } else {
-        await createUserWithEmailAndPassword(auth, email, password);
-      }
-      // Redirect to dashboard after successful login/signup
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      await createUserDocument(user);
       router.push('/dashboard');
     } catch (error) {
-      setError('Failed to ' + (isLogin ? 'login' : 'sign up') + '. Please try again.');
+      setError('Failed to sign up. Please try again.');
       setIsLoading(false);
     }
   };
@@ -70,8 +90,8 @@ const LoginSignup = () => {
   return (
     <Card className="w-[350px]">
       <CardHeader>
-        <CardTitle>{isLogin ? 'Login' : 'Sign Up'}</CardTitle>
-        <CardDescription>Enter your details below to {isLogin ? 'login' : 'create your account'}.</CardDescription>
+        <CardTitle>Sign Up</CardTitle>
+        <CardDescription>Enter your details below to create your account.</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit}>
@@ -121,23 +141,23 @@ const LoginSignup = () => {
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              {isLogin ? 'Logging in...' : 'Signing up...'}
+              Signing up...
             </>
           ) : (
-            isLogin ? 'Login' : 'Sign Up'
+            'Sign Up'
           )}
         </Button>
         <Button
           variant="link"
           className="mt-2"
-          onClick={() => setIsLogin(!isLogin)}
+          onClick={() => router.push('/login')}
           disabled={isLoading}
         >
-          {isLogin ? "Don't have an account? Sign up" : "Already have an account? Login"}
+          Already have an account? Login
         </Button>
       </CardFooter>
     </Card>
   );
 };
 
-export default LoginSignup;
+export default Signup;

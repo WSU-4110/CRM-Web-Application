@@ -98,7 +98,7 @@ export default function Home() {
           />
           Go to nextjs.org →
         </a>
-        <Button ><Link href='/auth'>Signup/Login</Link> </Button>
+        <Button ><Link href='/login'>Signup/Login</Link> </Button>
       </footer>
     </div>
   );

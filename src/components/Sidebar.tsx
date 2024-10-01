@@ -17,7 +17,7 @@ export function SidebarDemo() {
   const links = [
     {
       label: "Dashboard",
-      href: "#",
+      href: "/dashboard",
       icon: (
         <IconBrandTabler className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
       ),
@@ -38,7 +38,7 @@ export function SidebarDemo() {
     },
     {
     label: "Customers",  
-    href: "/customerspage",  
+    href: "/dashboard/customers",  
     icon: (
       <IconArrowLeft className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
     ),

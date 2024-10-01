@@ -6,6 +6,7 @@ import {
   IconBrandTabler,
   IconSettings,
   IconUserBolt,
+  IconChartBar
 } from "@tabler/icons-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -34,6 +35,27 @@ export function SidebarDemo() {
       href: "#",
       icon: (
         <IconSettings className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      ),
+    },
+    {
+      label: "Calendar",
+      href: "/dashboard/calendar",
+      icon: (
+        <IconArrowLeft className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      ),
+    },
+    {
+      label: "Expenses",
+      href: "/dashboard/expenses",
+      icon: (
+        <IconChartBar className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      ),
+    },
+    {
+      label: "Inventory",
+      href: "/dashboard/inventory",
+      icon: (
+        <IconArrowLeft className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
       ),
     },
     {

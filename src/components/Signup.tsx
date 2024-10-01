@@ -80,7 +80,7 @@ const Signup = () => {
       const user = userCredential.user;
 
       await createUserDocument(user);
-      router.push('/dashboard');
+      router.push('/complete-profile');
     } catch (error) {
       setError('Failed to sign up. Please try again.');
       setIsLoading(false);

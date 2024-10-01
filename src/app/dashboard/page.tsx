@@ -19,7 +19,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (isClient && !loading && !user) {
-      router.replace('/auth');
+      router.replace('/login');
     }
   }, [isClient, user, loading, router]);
 
@@ -31,18 +31,9 @@ const Dashboard = () => {
     return null;
   }
 
-  const handleSignOut = async () => {
-    try {
-      await auth.signOut();
-      router.push('/auth');
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
-  };
 
   return (
-    <div>
-      <Button className="mt-4" onClick={handleSignOut}>Sign Out</Button>
+    <div className='flex flex-col items-center justify-center w-full h-full'>
       <DashboardDemo />
     </div>
   );

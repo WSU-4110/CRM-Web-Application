@@ -1,23 +1,38 @@
 "use client";
 import React, { useState } from "react";
 import { Sidebar, SidebarBody, SidebarLink } from "./ui/sidebar";
+import { Button } from "./ui/button";
 import {
   IconArrowLeft,
   IconBrandTabler,
   IconSettings,
   IconUserBolt,
+  IconUsers
 } from "@tabler/icons-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 
 import { useAuth } from "@/app/contexts/AuthContext";
+import { auth } from "@/firebaseConfig";
 
 export function SidebarDemo() {
+  const router = useRouter();
+
+  const handleSignOut = async () => {
+    try {
+      await auth.signOut();
+      router.push('/login');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
   
   const links = [
     {
       label: "Dashboard",
-      href: "#",
+      href: "/dashboard",
       icon: (
         <IconBrandTabler className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
       ),
@@ -38,9 +53,9 @@ export function SidebarDemo() {
     },
     {
     label: "Customers",  
-    href: "/customerspage",  
+    href: "/dashboard/customers",  
     icon: (
-      <IconArrowLeft className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      <IconUsers className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
     ),
   },
     {
@@ -66,15 +81,7 @@ export function SidebarDemo() {
             </div>
           </div>
           <div>
-            <SidebarLink
-              link={{
-                label: "",
-                href: "#",
-                icon: (
-                    <IconBrandTabler className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-                  ),
-              }}
-            />
+          <Button className={`mt-4 ${!open? "hidden": ""}`} onClick={handleSignOut} >Sign Out</Button>
           </div>
         </SidebarBody>
       </Sidebar>

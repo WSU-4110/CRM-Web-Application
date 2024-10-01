@@ -5,6 +5,7 @@ import "./globals.css";
 import { AuthProvider } from "./contexts/AuthContext";
 import { SidebarDemo } from "@/components/Sidebar";
 
+import { Toaster } from '@/components/ui/toaster';
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -26,6 +27,7 @@ export default function RootLayout({
           <div className="flex flex-row w-full h-full">
             
             {children}
+            <Toaster/>
           </div>
         </AuthProvider>
 

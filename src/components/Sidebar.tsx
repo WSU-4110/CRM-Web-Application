@@ -9,7 +9,9 @@ import {
   IconUserBolt,
   IconChartBar,
   IconUsers,
-  IconCalendarMonth
+  IconCalendarMonth,
+  IconBuildingWarehouse,
+  IconLogout2
 
 } from "@tabler/icons-react";
 import Link from "next/link";
@@ -72,7 +74,7 @@ export function SidebarDemo() {
       label: "Inventory",
       href: "/dashboard/inventory",
       icon: (
-        <IconArrowLeft className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+        <IconBuildingWarehouse className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
       ),
     },
     {
@@ -86,7 +88,7 @@ export function SidebarDemo() {
       label: "Logout",
       href: "#",
       icon: (
-        <IconArrowLeft className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+        <IconLogout2 className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
       ),
     },
   ];

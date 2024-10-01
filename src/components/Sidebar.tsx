@@ -9,6 +9,7 @@ import {
 } from "@tabler/icons-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+
 import { useAuth } from "@/app/contexts/AuthContext";
 
 export function SidebarDemo() {
@@ -51,7 +52,7 @@ export function SidebarDemo() {
     },
   ];
   const [open, setOpen] = useState(false);
-
+  
   return (
     <div>
       <Sidebar open={open} setOpen={setOpen}>
@@ -81,7 +82,10 @@ export function SidebarDemo() {
   );
 }
 export const Logo = () => {
+
   const { user } = useAuth();
+
+
   return (
     <Link
       href="#"
@@ -93,7 +97,9 @@ export const Logo = () => {
         animate={{ opacity: 1 }}
         className="font-medium text-black dark:text-white whitespace-pre"
       >
+
       {user?.email}
+
       </motion.span>
     </Link>
   );
@@ -108,3 +114,5 @@ export const LogoIcon = () => {
     </Link>
   );
 };
+
+

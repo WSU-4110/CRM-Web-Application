@@ -42,7 +42,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from "@/components/ui/table";
 
 export const description =
   "An application shell with a header and main content area. The header has a navbar, a search input and and a user nav dropdown. The user nav is toggled by a button with an avatar image."
@@ -50,8 +50,9 @@ export const description =
 export function DashboardDemo() {
   return (
     <div className="flex min-h-screen w-full flex-col">
-      <header>Dashboard</header>
+     
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
+        <h1 className="text-4xl font-bold mt-6">Dashboard</h1>
         <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
           <Card x-chunk="dashboard-01-chunk-0">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

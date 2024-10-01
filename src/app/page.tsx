@@ -11,7 +11,7 @@ const LandingPage = () => {
     <div className="min-h-screen bg-gray-100 w-full">
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-gray-900">CRM Pro</h1>
+          <h1 className="text-3xl font-bold text-gray-900">CRM</h1>
           <div>
             <Button variant="outline" className="mr-2" onClick={() => router.push('/login')}>
               Login

@@ -1,4 +1,3 @@
-
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import {  doc, updateDoc } from 'firebase/firestore';
@@ -25,7 +24,6 @@ export async function POST(request: NextRequest) {
 
     const { firstName, lastName, businessName, email, uid } = result.data;
 
-    // Update the user's profile in Firestore
     const userDocRef = doc(db, 'users', uid);
     await updateDoc(userDocRef, {
       firstName,
@@ -40,3 +38,5 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
+
+

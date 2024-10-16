@@ -7,7 +7,12 @@ import {
   IconBrandTabler,
   IconSettings,
   IconUserBolt,
-  IconUsers
+  IconChartBar,
+  IconUsers,
+  IconCalendarMonth,
+  IconBuildingWarehouse,
+  IconLogout2
+
 } from "@tabler/icons-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -52,8 +57,36 @@ export function SidebarDemo() {
       ),
     },
     {
+      label: "Calendar",
+      href: "/dashboard/calendar",
+      icon: (
+        <IconCalendarMonth className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      ),
+    },
+    {
+      label: "Expenses",
+      href: "/dashboard/expenses",
+      icon: (
+        <IconChartBar className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      ),
+    },
+    {
+      label: "Inventory",
+      href: "/dashboard/inventory",
+      icon: (
+        <IconBuildingWarehouse className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      ),
+    },
+    {
     label: "Customers",  
     href: "/dashboard/customers",  
+    icon: (
+      <IconUsers className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+    ),
+  },
+  {
+    label: "Analytics",  
+    href: "/dashboard/analytics",  
     icon: (
       <IconUsers className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
     ),
@@ -62,7 +95,7 @@ export function SidebarDemo() {
       label: "Logout",
       href: "#",
       icon: (
-        <IconArrowLeft className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+        <IconLogout2 className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
       ),
     },
   ];

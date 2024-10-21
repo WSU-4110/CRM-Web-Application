@@ -75,10 +75,26 @@ function CalendarPage(){ //Calendar page
         />
       </div>
 
+      <div className=' px-10 '>
+        <Card x-chunk="upcoming-events-chunk">
+          <CardHeader>
+            <CardTitle>Upcoming Events</CardTitle>
+          </CardHeader>
+          <CardContent >
+            <ul>
+              {events.map(event => (
+                <li key={event.id} className="mb-4">
+                  <strong>{event.title}</strong>
+                  <br />
+                  {event.date.toLocaleString()}
+                </li>
+              ))}
+            </ul>
 
-
-      
-
+            {events.length === 0 && <p>No upcoming events</p>}
+            </CardContent>
+        </Card>
+      </div>
 
 
       {showEventForm && (

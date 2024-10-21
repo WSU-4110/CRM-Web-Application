@@ -1,19 +1,17 @@
-'use client'
+'use client';
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getAuth, createUserWithEmailAndPassword, User } from 'firebase/auth';
+import { getAuth, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, User } from 'firebase/auth';
 import { z } from 'zod';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2 } from 'lucide-react';
-
 const schema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
   password: z.string().min(6, { message: "Password must be at least 6 characters long" }),
 });
-
 const Signup = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -22,7 +20,6 @@ const Signup = () => {
   const [isLoading, setIsLoading] = useState(false);
   const auth = getAuth();
   const router = useRouter();
-
   const validateForm = () => {
     try {
       schema.parse({ email, password });
@@ -52,11 +49,9 @@ const Signup = () => {
           email: user.email,
         }),
       });
-
       if (!response.ok) {
         throw new Error('Failed to create user document');
       }
-
       const data = await response.json();
       console.log('User document created:', data);
     } catch (error) {
@@ -64,17 +59,13 @@ const Signup = () => {
       throw error;
     }
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-
     if (!validateForm()) {
       return;
     }
-
     setIsLoading(true);
-
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
@@ -86,7 +77,21 @@ const Signup = () => {
       setIsLoading(false);
     }
   };
-
+  // Function to handle Google Sign-Up
+  const handleGoogleSignIn = async () => {
+    const provider = new GoogleAuthProvider();
+    setIsLoading(true);
+    try {
+      const userCredential = await signInWithPopup(auth, provider);
+      const user = userCredential.user;
+      await createUserDocument(user);
+      router.push('/complete-profile');
+    } catch (error) {
+      setError('Could not sign up with this google account.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
   return (
     <Card className="w-[350px]">
       <CardHeader>
@@ -139,12 +144,23 @@ const Signup = () => {
           disabled={isLoading}
         >
           {isLoading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Signing up...
-            </>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           ) : (
             'Sign Up'
+          )}
+        </Button>
+        <Button 
+          className="w-full mt-2" 
+          onClick={handleGoogleSignIn} 
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Signing up with Google...
+            </>
+          ) : (
+            'Sign Up with Google'
           )}
         </Button>
         <Button

@@ -66,8 +66,19 @@ const LoginSignup = () => {
       setIsLoading(false);
     }
   };
-
-  return (
+ const handleGoogleSignIn = async () => {
+    const provider = new GoogleAuthProvider();
+    setIsLoading(true);
+    try {
+      await signInWithPopup(auth, provider);
+      // Redirect to dashboard after successful login
+      router.push('/dashboard');
+    } catch (error) {
+      setError('Failed to login with Google. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  }; return (
     <Card className="w-[350px]">
       <CardHeader>
         <CardTitle>{isLogin ? 'Login' : 'Sign Up'}</CardTitle>
@@ -127,6 +138,20 @@ const LoginSignup = () => {
             isLogin ? 'Login' : 'Sign Up'
           )}
         </Button>
+        <Button 
+          className="w-full mt-2" 
+          onClick={handleGoogleSignIn} 
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              'Signing in with Google...'
+            </>
+          ) : (
+            'Login with Google'
+          )}
+        </Button>
         <Button
           variant="link"
           className="mt-2"
@@ -139,5 +164,4 @@ const LoginSignup = () => {
     </Card>
   );
 };
-
 export default LoginSignup;

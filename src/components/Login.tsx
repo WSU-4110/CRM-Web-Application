@@ -53,7 +53,7 @@ const Login = () => {
     }
   };
   // this is the oauth code, uses google signup
-  const signinwithgoogle = async () => {
+  const signinWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
     setIsLoading(true);
    try {
@@ -124,7 +124,7 @@ const Login = () => {
         <Button
           variant="outline"
           className="w-full mt-2"
-          onClick={signInWithGoogle}
+          onClick={signinWithGoogle}
           disabled={isLoading}
         >
           Sign in with Google

@@ -4,6 +4,7 @@ import { Inter } from 'next/font/google';
 import "./globals.css";
 import { AuthProvider } from "./contexts/AuthContext";
 import { SidebarDemo } from "@/components/Sidebar";
+import 'leaflet/dist/leaflet.css'
 
 import { Toaster } from '@/components/ui/toaster';
 const inter = Inter({ subsets: ["latin"] });
@@ -20,6 +21,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+      <link
+          rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css"
+        />
+      </head>
       <body
         className={`${inter.className} antialiased h-screen`}>
 

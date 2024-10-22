@@ -75,8 +75,8 @@ function CalendarPage(){ //Calendar page
         />
       </div>
 
-      <div className=' px-10 '>
-        <Card x-chunk="upcoming-events-chunk">
+      <div className='px-10'>
+        <Card className="overflow-scroll " x-chunk="upcoming-events-chunk">
           <CardHeader>
             <CardTitle>Upcoming Events</CardTitle>
           </CardHeader>

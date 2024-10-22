@@ -198,7 +198,7 @@ const Expenses = () => {
               ) : (
               expenses.map((expense) => (
 
-                <div key={expense.id} className="flex items-center px-6 py-3">
+                <div key={expense.id} className="flex items-center px-6 py-3 cursor-auto" onClick={() => handleEdit(expense)}>
 
                   <div className="flex-1">
                     <div className="flex items-center gap-3">
@@ -207,7 +207,7 @@ const Expenses = () => {
                   </div>
 
                   <div className="flex-1 text-l">{expense.merchant}</div>
-                  <div className="flex-1 text-l">{expense.amount}</div>
+                  <div className="flex-1 text-l">${expense.amount}</div>
                   <div className="flex-1 text-l">{expense.date}</div>
 
                   <div className="flex-1">
@@ -247,7 +247,7 @@ const Expenses = () => {
                 <Input id="merchant" name="merchant" defaultValue={currentExpense?.merchant} required />
               </div>
               <div>
-                <Label htmlFor="amount">Amount</Label>
+                <Label htmlFor="amount">Amount($)</Label>
                 <Input id="amount" name="amount" type="number" step="0.01" defaultValue={currentExpense?.amount} required />
               </div>
               <div>
@@ -255,11 +255,11 @@ const Expenses = () => {
                 <Input id="date" name="date" type="date" defaultValue={currentExpense?.date} required />
               </div>
               <div>
-                <Label htmlFor="status">Status</Label>
+                <Label htmlFor="status">Status(Approved : Not Approved)</Label>
                 <Input id="status" name="status" defaultValue={currentExpense?.status} required />
               </div>
               <div className="flex justify-end">
-                <Button type="submit">{currentExpense ? 'Update' : 'Add'}</Button>
+                <Button type="submit">{currentExpense ? 'Update' : 'Add'} Expense</Button>
               </div>
             </div>
           </form>

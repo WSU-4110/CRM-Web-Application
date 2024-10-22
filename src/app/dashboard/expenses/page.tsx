@@ -19,84 +19,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MoreVertical, Plus, Filter, Layout } from 'lucide-react';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
-
-
-// const Expenses = () => { //expenses page
-//   return (
-//     <div className="flex min-h-screen w-full flex-col">
-//       <div className="flex flex-1 flex-row gap-2 justify-between md:gap-4 md:p-4">
-//         <h1 className="text-4xl font-bold px-1.5 mt-6">Expenses</h1>
-//         <Button className='mr-2 mt-6'>Add Expense</Button>
-//           {/* put in the input form for the add expense button */}
-//       </div>
-//       <div className="flex flex-1 flex-row gap-2 md:gap-4 md:p-6">
-//         <Input placeholder='Search expenses' />
-//       </div>
-      
-
-//       <div className='flex flex-1 flex-col gap-2 p-6'>
-//         <Card className='flex flex-1 flex-col gap-2 my-4'>
-//           <CardHeader>
-//             <CardTitle>Expense 1</CardTitle>
-//           </CardHeader>
-//           <CardContent>
-//             <div className='flex flex-1 flex-row gap-2'>
-//               <div className='flex flex-1 flex-col gap-2'>
-//                 <p>Amount: $100</p>
-//                 <p>Date: 12/12/2021</p>
-//               </div>
-//               <div className='flex flex-1 flex-col gap-2'>
-//                 <p>Category: Food</p>
-//                 <p>Notes: Bought groceries</p>
-//               </div>
-//             </div>
-//           </CardContent>
-//         </Card>
-//         <Card className='flex flex-1 flex-col gap-2 my-4'>
-//           <CardHeader>
-//             <CardTitle>Expense 2</CardTitle>
-//           </CardHeader>
-//           <CardContent>
-//             <div className='flex flex-1 flex-row gap-2'>
-//               <div className='flex flex-1 flex-col gap-2'>
-//                 <p>Amount: $50</p>
-//                 <p>Date: 12/12/2021</p>
-//               </div>
-//               <div className='flex flex-1 flex-col gap-2'>
-//                 <p>Category: Food</p>
-//                 <p>Notes: Bought groceries</p>
-//               </div>
-//             </div>
-//           </CardContent>
-//         </Card>
-//         <Card className='flex flex-1 flex-col gap-2 my-4'>
-//           <CardHeader>
-//             <CardTitle>Expense 3</CardTitle>
-//           </CardHeader>
-//           <CardContent>
-//             <div className='flex flex-1 flex-row gap-2'>
-//               <div className='flex flex-1 flex-col gap-2'>
-//                 <p>Amount: $150</p>
-//                 <p>Date: 12/12/2021</p>
-//               </div>
-//               <div className='flex flex-1 flex-col gap-2'>
-//                 <p>Category: Food</p>
-//                 <p>Notes: Bought groceries</p>
-//               </div>
-//             </div>
-//           </CardContent>
-//         </Card>
-//       </div>
-//     </div>
-//   );
-// };
-// export default Expenses;
-
-
-
 
 const Expenses = () => {
   // const expenses = [
@@ -240,9 +165,11 @@ const Expenses = () => {
         <div className="flex justify-between items-center my-6">
           <h1 className="text-4xl font-bold">Expenses</h1>
           <div className="flex gap-2">
-            <Button onClick={() => {
-              setIsDialogOpen(true);            
-            }} className="bg-black hover:bg-emerald-700 text-white flex items-center gap-2">
+            <Button 
+              onClick={() => {
+                setIsDialogOpen(true);            
+              }} 
+              className="bg-black hover:bg-emerald-700 text-white flex items-center gap-2">
               <Plus className="h-4 w-4" />
               New expense
             </Button>
@@ -260,41 +187,84 @@ const Expenses = () => {
                 <div className="flex-1">Status</div>
                 <div className="w-8"></div>
               </div>
+            
 
+            {/* output entries of expenses from the database to the frontend, if there are none then it will print a default message*/}
             <div className="divide-y divide-gray-800 border-x-2">
-              {expenses.map((expense) => (
+              {expenses.length === 0 ? (
+                <div className="flex items-center justify-center px-6 py-3">
+                  <p className="text-gray-500">No expenses found.</p>
+                </div>
+              ) : (
+              expenses.map((expense) => (
+
                 <div key={expense.id} className="flex items-center px-6 py-3">
+
                   <div className="flex-1">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center text-lg">
-                        {expense.icon}
-                      </div>
-                      <div>
-                        {/* <div className="text-sm">{expense.date}</div> */}
-                        <div className="text-l">{expense.type}</div>
-                      </div>
+                      <div className="text-l">{expense.type}</div>
                     </div>
                   </div>
+
                   <div className="flex-1 text-l">{expense.merchant}</div>
                   <div className="flex-1 text-l">{expense.amount}</div>
                   <div className="flex-1 text-l">{expense.date}</div>
+
                   <div className="flex-1">
                     <span className={`px-3 py-1 rounded-full text-xs font-medium
                       ${expense.status === 'Approved' ? 'bg-green-600 text-white' : 'bg-green-900/50 text-red-300'}`}>
                       {expense.status}
                     </span>
                   </div>
+
                   <div className="w-8">
                     <button className="text-gray-400 hover:text-gray-300">
-                      <MoreVertical className="h-4 w-4" />
+                    <MoreVertical className="h-4 w-4" />
                     </button>
                   </div>
+                
                 </div>
-              ))}
+              ))
+            )}
             </div>
           </div>
         </div>
       </div>
+
+      <Dialog open={isDialogOpen} onOpenChange={handleDialogChange}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{currentExpense ? 'Edit Expense' : 'Add New Expense'}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmit}>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="type">Type</Label>
+                <Input id="type" name="type" defaultValue={currentExpense?.type} required />
+              </div>
+              <div>
+                <Label htmlFor="merchant">Merchant</Label>
+                <Input id="merchant" name="merchant" defaultValue={currentExpense?.merchant} required />
+              </div>
+              <div>
+                <Label htmlFor="amount">Amount</Label>
+                <Input id="amount" name="amount" type="number" step="0.01" defaultValue={currentExpense?.amount} required />
+              </div>
+              <div>
+                <Label htmlFor="date">Date</Label>
+                <Input id="date" name="date" type="date" defaultValue={currentExpense?.date} required />
+              </div>
+              <div>
+                <Label htmlFor="status">Status</Label>
+                <Input id="status" name="status" defaultValue={currentExpense?.status} required />
+              </div>
+              <div className="flex justify-end">
+                <Button type="submit">{currentExpense ? 'Update' : 'Add'}</Button>
+              </div>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 
-import "/Users/aibra11/Desktop/CRM-Web-Application/src/app/Profile.css"
+
+import "@/app/Profile.css"
 
 
 export default function Profile() {
@@ -21,7 +22,7 @@ export default function Profile() {
             company,
             businessType,
             timezone,
-            position
+            position,
         };
         console.log(profileData); // Output form data to console
     };

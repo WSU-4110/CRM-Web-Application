@@ -66,9 +66,13 @@ export async function PUT(request) {
         const docRef = doc(db, "expenses", userId);
         const docSnap = await getDoc(docRef);
 
-        if(docSnap.exists()) {
+        if(docSnap.exists()) {  
+            const expenses = docSnap.data().expenses;
+            const expenseIndex = expenses.findIndex((exp) => exp.id === expense.id);
+            expenses[expenseIndex] = {...expense};
+    
             await updateDoc(docRef, {
-                expenses: arrayUnion({ ...expense, id: expense.id })
+                expenses,
             });
         } else {
             return NextResponse.json({ error: "Expense not found" }, { status: 404 });

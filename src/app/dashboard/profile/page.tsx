@@ -1,10 +1,8 @@
-"use client"
+"use client";
 
 import React, { useState } from 'react';
-
-
-import "@/app/Profile.css"
-
+import "@/app/Profile.css";
+import { getAuth } from "firebase/auth";
 
 export default function Profile() {
     const [firstName, setFirstName] = useState('');
@@ -14,7 +12,10 @@ export default function Profile() {
     const [timezone, setTimezone] = useState('');
     const [position, setPosition] = useState('');
 
-    const handleSubmit = (e) => {
+    const auth = getAuth();
+    const userId = null;
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
         const profileData = {
             firstName,
@@ -24,10 +25,37 @@ export default function Profile() {
             timezone,
             position,
         };
-        console.log(profileData); // Output form data to console
+
+         // Basic validation to ensure all fields are non-empty and not null
+        for (const [key, value] of Object.entries(profileData)) {
+            if (!value) {
+                console.error(`Validation failed: missing field(s)`);
+                alert(`Please fill out the missing field(s).`);
+                return; 
+        }
+    }
+
+        if (!userId) { //If user is not authenticated
+            console.error("User is not authenticated");
+            return;
+        }
+
+        try {  //Fetches API, on the bottom logs to console whether submission went through or not
+            const response = await fetch("/api/profile-route", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ userId, profileData }),
+            });
+            if (response.ok) {
+                console.log("Profile updated successfully");
+            } else {
+                console.error("Failed to update profile");
+            }
+        } catch (error) {
+            console.error("Error:", error);
+        }
     };
 
-    // Get today's date
     const today = new Date();
     const formattedDate = today.toLocaleDateString('en-US', {
         weekday: 'long',
@@ -38,15 +66,12 @@ export default function Profile() {
 
     return (
         <>
-            {/* Welcome message outside the profile container */}
             <header className="welcome-header">
                 <h1>Welcome, Business Owner</h1>
                 <p>{formattedDate}</p>
             </header>
 
-            {/* Profile form inside the box */}
             <div className="profile-container">
-                {/* Colored rectangle bar */}
                 <div className="profile-header-bar"></div>
                 <div className="profile-container-content">
                     <div className="profile-header">
@@ -59,7 +84,6 @@ export default function Profile() {
                             <h2>Client Name</h2>
                             <p>client@gmail.com</p>
                         </div>
-                        <button className="edit-button">Edit</button>
                     </div>
 
                     <form onSubmit={handleSubmit} className="profile-form">
@@ -102,4 +126,3 @@ export default function Profile() {
         </>
     );
 };
-

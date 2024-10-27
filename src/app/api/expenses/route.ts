@@ -37,9 +37,13 @@ export async function POST(request) {
         const docRef = doc(db, "expenses", userId);
         const docSnap = await getDoc(docRef);
 
-        if(docSnap.exists()) {
+        if(docSnap.exists()) { 
+            const expenses = docSnap.data().expenses;
+            const expenseIndex = expenses.findIndex((exp) => exp.id === expense.id);
+            expenses[expenseIndex] = {...expense};
+    
             await updateDoc(docRef, {
-                expenses: arrayUnion({ ...expense, id: Date.now().toString() })
+                expenses,
             });
         } else {
             await setDoc(docRef, {

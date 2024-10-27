@@ -13,7 +13,7 @@ export default function Profile() {
     const [position, setPosition] = useState('');
 
     const auth = getAuth();
-    const userId = null;
+    const userId = auth.currentUser ? auth.currentUser.uid : null;
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -84,6 +84,7 @@ export default function Profile() {
                             <h2>Client Name</h2>
                             <p>client@gmail.com</p>
                         </div>
+
                     </div>
 
                     <form onSubmit={handleSubmit} className="profile-form">

@@ -1,19 +1,30 @@
+/* Full-page centering and background color */
+body, html {
+    height: 100%;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: left;
+    background-color: #f3f4f6; /* Light gray background */
+}
 
 .profile-container {
     max-width: 900px;
-    margin: 40px auto; /* Add margin to the top for space */
-    background: #ffffff; /* Keep the card white */
+    width: 100%;
+    background: #ffffff; /* White card background */
     padding: 20px;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
     border-radius: 10px;
     position: relative;
+   
+
 }
 
-/* Colored rectangle or gradient bar */
+/* Dark rectangle bar at the top */
 .profile-header-bar {
-    height: 75px;
+    height: 50px;
     width: 100%;
-    background: linear-gradient(to right, #4fd5f7, #f0eff1);
+    background: #151515; 
     border-radius: 10px 10px 0 0;
     position: absolute;
     top: 0;
@@ -21,7 +32,7 @@
 }
 
 .profile-container-content {
-    padding-top: 70px;
+    padding-top: 70px; /* Adds extra space to prevent overlap with the header bar */
 }
 
 .welcome-header {
@@ -41,7 +52,7 @@
     margin-top: 5px;
 }
 
-.profile-header {
+.profile-header {     
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -67,19 +78,6 @@
 .profile-info p {
     margin: 5px 0 0 0;
     color: #888;
-}
-
-.edit-button {
-    background-color: #007bff;
-    color: white;
-    padding: 8px 16px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.edit-button:hover {
-    background-color: #0056b3;
 }
 
 .profile-form {
@@ -110,7 +108,7 @@
 }
 
 .submit-button {
-    background-color: #007bff;
+    background-color: #151515;
     color: white;
     padding: 10px 20px;
     border: none;
@@ -121,5 +119,5 @@
 }
 
 .submit-button:hover {
-    background-color: #0056b3;
+    background-color: #373738;
 }

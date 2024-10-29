@@ -1,46 +1,41 @@
-"use client";
-
+'use client';
 import React, { useState } from 'react';
-import "@/app/Profile.css";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Avatar } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { getAuth } from "firebase/auth";
 
 export default function Profile() {
-    const [firstName, setFirstName] = useState('');
-    const [lastName, setLastName] = useState('');
-    const [company, setCompany] = useState('');
-    const [businessType, setBusinessType] = useState('');
-    const [timezone, setTimezone] = useState('');
-    const [position, setPosition] = useState('');
+    const [firstName, setFirstName] = useState("");
+    const [lastName, setLastName] = useState("");
+    const [company, setCompany] = useState("");
+    const [businessType, setBusinessType] = useState("");
+    const [timezone, setTimezone] = useState("");
+    const [position, setPosition] = useState("");
 
     const auth = getAuth();
     const userId = auth.currentUser ? auth.currentUser.uid : null;
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const profileData = {
-            firstName,
-            lastName,
-            company,
-            businessType,
-            timezone,
-            position,
-        };
+        const profileData = { firstName, lastName, company, businessType, timezone, position };
 
-         // Basic validation to ensure all fields are non-empty and not null
         for (const [key, value] of Object.entries(profileData)) {
             if (!value) {
-                console.error(`Validation failed: missing field(s)`);
                 alert(`Please fill out the missing field(s).`);
-                return; 
+                return;
+            }
         }
-    }
 
-        if (!userId) { //If user is not authenticated
+        if (!userId) {
             console.error("User is not authenticated");
             return;
         }
 
-        try {  //Fetches API, on the bottom logs to console whether submission went through or not
+        try {
             const response = await fetch("/api/profile-route", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -56,74 +51,54 @@ export default function Profile() {
         }
     };
 
-    const today = new Date();
-    const formattedDate = today.toLocaleDateString('en-US', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    });
-
     return (
-        <>
-            <header className="welcome-header">
-                <h1>Welcome, Business Owner</h1>
-                <p>{formattedDate}</p>
-            </header>
-
-            <div className="profile-container">
-                <div className="profile-header-bar"></div>
-                <div className="profile-container-content">
-                    <div className="profile-header">
-                        <img 
-                            className="profile-picture" 
-                            src="https://via.placeholder.com/150" 
-                            alt="Profile"
-                        />
-                        <div className="profile-info">
-                            <h2>Client Name</h2>
-                            <p>client@gmail.com</p>
+        <div className="container mx-auto flex justify-center items-center min-h-screen ">
+            <Card className="w-full max-w-2xl p-20 bg-white text-black  rounded-lg">
+                <CardHeader className="text-center mb-10">
+                    <Avatar src="https://placehold.co/600x400" alt="Profile" className="mx-auto mb-2 border-4 border-gray-300 rounded-full"/>
+                    <CardTitle className="text-2xl font-semibold">Placeholder Name</CardTitle>
+                    <p className="text-gray-500">Placeholder Email</p>
+                </CardHeader>
+                <CardContent>
+                    <form onSubmit={handleSubmit} className="grid gap-4">
+                        <div>
+                            <Label>First Name:</Label>
+                            <Input type="text" value={firstName} placeholder="Your First Name" onChange={(e) => setFirstName(e.target.value)} />
                         </div>
-
-                    </div>
-
-                    <form onSubmit={handleSubmit} className="profile-form">
-                        <div className="form-grid">
-                            <div className="input-group">
-                                <label>First Name:</label>
-                                <input type="text" value={firstName} placeholder="Your First Name" onChange={(e) => setFirstName(e.target.value)} />
-                            </div>
-                            <div className="input-group">
-                                <label>Business Type:</label>
-                                <input type="text" value={businessType} placeholder="Your Business Type" onChange={(e) => setBusinessType(e.target.value)} />
-                            </div>
-                            <div className="input-group">
-                                <label>Last Name:</label>
-                                <input type="text" value={lastName} placeholder="Your Last Name" onChange={(e) => setLastName(e.target.value)} />
-                            </div>
-                            <div className="input-group">
-                                <label>Timezone:</label>
-                                <select value={timezone} onChange={(e) => setTimezone(e.target.value)}>
-                                    <option value="">Select Your Timezone</option>
-                                    <option value="PST">Pacific Standard Time (PST)</option>
-                                    <option value="EST">Eastern Standard Time (EST)</option>
-                                    <option value="CST">Central Standard Time (CST)</option>
-                                    <option value="MST">Mountain Standard Time (MST)</option>
-                                </select>
-                            </div>
-                            <div className="input-group">
-                                <label>Company/Organization:</label>
-                                <input type="text" value={company} placeholder="Your Company/Org" onChange={(e) => setCompany(e.target.value)} />
-                            </div>
-                            <div className="input-group">
-                                <label>Role/Position:</label>
-                                <input type="text" value={position} placeholder="Your Role/Position" onChange={(e) => setPosition(e.target.value)} />
-                            </div>
+                        <div>
+                            <Label>Business Type:</Label>
+                            <Input type="text" value={businessType} placeholder="Your Business Type" onChange={(e) => setBusinessType(e.target.value)} />
                         </div>
-                        <button type="submit" className="submit-button">Submit</button>
+                        <div>
+                            <Label>Last Name:</Label>
+                            <Input type="text" value={lastName} placeholder="Your Last Name" onChange={(e) => setLastName(e.target.value)} />
+                        </div>
+                        <div>
+                            <Label>Timezone:</Label>
+                            <Select value={timezone} onValueChange={(value) => setTimezone(value)} className="w-full">
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select Your Timezone" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="PST">Pacific Standard Time (PST)</SelectItem>
+                                    <SelectItem value="EST">Eastern Standard Time (EST)</SelectItem>
+                                    <SelectItem value="CST">Central Standard Time (CST)</SelectItem>
+                                    <SelectItem value="MST">Mountain Standard Time (MST)</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div>
+                            <Label>Company/Organization:</Label>
+                            <Input type="text" value={company} placeholder="Your Company/Org" onChange={(e) => setCompany(e.target.value)} />
+                        </div>
+                        <div>
+                            <Label>Role/Position:</Label>
+                            <Input type="text" value={position} placeholder="Your Role/Position" onChange={(e) => setPosition(e.target.value)} />
+                        </div>
+                        <Button type="submit" className="w-full mt-4 bg-black text-white hover:bg-gray-800">Submit</Button>
                     </form>
-                </div>
-            </div>
-        </>
+                </CardContent>
+            </Card>
+        </div>
     );
-};
+}

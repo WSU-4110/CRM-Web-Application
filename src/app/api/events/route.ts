@@ -32,6 +32,7 @@ export async function POST(request: Request) {
     id: eventId,
     ...data,
     userId: data.userId,
+    expenses: [],
     createdAt: new Date().toISOString()
   }
 

@@ -43,8 +43,6 @@ const EventForm = ({ onSubmit, onCancel, initialEvent, onDelete }) => {
       setEvents(data.events || [])
     } else {
       toast({
-        title: 'Error',
-        description: 'Failed to fetch events',
         variant: 'destructive',
       })
     }

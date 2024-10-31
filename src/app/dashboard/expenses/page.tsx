@@ -23,8 +23,13 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
-const Expenses = () => {
-  
+//design pattern imports
+import { FirebaseFetchStrategy } from '@/app/strategy-design/FirebaseFetchStrategy';
+import { FirebaseSubmitStrategy } from '@/app/strategy-design/FirebaseFetchStrategy';
+
+const Expenses = ({ fetchStrategy = new FirebaseFetchStrategy(), submitStrategy = new FirebaseSubmitStrategy() }) => {
+  // const Expenses = () => {
+
   const [expenses, setExpenses] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [currentExpense, setCurrentExpense] = useState(null);
@@ -54,66 +59,106 @@ const Expenses = () => {
     }
   }, [user]);
 
+  // const fetchExpenses = async () => {
+  //   const response = await fetch(`/api/expenses?userId=${user.uid}`);
+  //   if (response.ok) {
+  //     const data = await response.json();
+  //     setExpenses(data.expenses || []);
+  //   } else {
+  //     toast({
+  //       title: "Error",
+  //       description: "Failed to fetch expenses",
+  //       variant: "destructive",
+  //     });
+  //   }
+  // };
+
+  // design pattern implementation
   const fetchExpenses = async () => {
-    const response = await fetch(`/api/expenses?userId=${user.uid}`);
-    if (response.ok) {
-      const data = await response.json();
-      setExpenses(data.expenses || []);
-    } else {
+    try{
+      const expenseData = await fetchStrategy.fetchExpenses(user.uid);
+      setExpenses(expenseData);
+    }catch(error){
       toast({
         title: "Error",
-        description: "Failed to fetch expenses",
+        description: error.message,
         variant: "destructive",
       });
-    }
-  };
+    };
+  }
+
+  // const handleSubmit = async (event) => {
+  //   event.preventDefault();
+  //   const formData = new FormData(event.target);
+  //   const expenseData = Object.fromEntries(formData.entries());
+    
+  //   try {
+  //     // First, create/update the expense in the expenses collection
+  //     const expenseResponse = await fetch(`/api/expenses`, {
+  //       method: currentExpense ? 'PUT' : 'POST',
+  //       headers: { 'Content-Type': 'application/json' },
+  //       body: JSON.stringify({ 
+  //         userId: user.uid, 
+  //         expense: { 
+  //           ...expenseData,
+  //           id: currentExpense?.id || Date.now().toString()
+  //         } 
+  //       }),
+  //     });
+
+  //     if (!expenseResponse.ok) {
+  //       throw new Error('Failed to save expense');
+  //     }
+
+  //     // If there's an associated event, update it as well
+  //     if (expenseData.associatedEvent) {
+  //       const eventResponse = await fetch(`/api/events/associate-expense`, {
+  //         method: 'POST',
+  //         headers: { 'Content-Type': 'application/json' },
+  //         body: JSON.stringify({
+  //           userId: user.uid,
+  //           eventId: expenseData.associatedEvent,
+  //           expense: expenseData
+  //         })
+  //       });
+
+  //       if (!eventResponse.ok) {
+  //         throw new Error('Failed to associate expense with event');
+  //       }
+  //     }
+      
+  //     fetchExpenses();
+  //     setIsDialogOpen(false);
+  //     setCurrentExpense(null);
+  //     toast({
+  //       title: "Success",
+  //       description: `Expense ${currentExpense ? 'updated' : 'added'} successfully`,
+  //     });
+  //   } catch (error) {
+  //     toast({
+  //       title: "Error",
+  //       description: error.message,
+  //       variant: "destructive",
+  //     });
+  //   }
+  // };
+
+  //design pattern implementation
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     const formData = new FormData(event.target);
     const expenseData = Object.fromEntries(formData.entries());
-    
+    expenseData.id = currentExpense?.id || Date.now().toString();
+
     try {
-      // First, create/update the expense in the expenses collection
-      const expenseResponse = await fetch(`/api/expenses`, {
-        method: currentExpense ? 'PUT' : 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          userId: user.uid, 
-          expense: { 
-            ...expenseData,
-            id: currentExpense?.id || Date.now().toString()
-          } 
-        }),
-      });
-
-      if (!expenseResponse.ok) {
-        throw new Error('Failed to save expense');
-      }
-
-      // If there's an associated event, update it as well
-      if (expenseData.associatedEvent) {
-        const eventResponse = await fetch(`/api/events/associate-expense`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId: user.uid,
-            eventId: expenseData.associatedEvent,
-            expense: expenseData
-          })
-        });
-
-        if (!eventResponse.ok) {
-          throw new Error('Failed to associate expense with event');
-        }
-      }
-      
+      await submitStrategy.submitExpense(expenseData, user.uid);
       fetchExpenses();
       setIsDialogOpen(false);
       setCurrentExpense(null);
       toast({
         title: "Success",
-        description: `Expense ${currentExpense ? 'updated' : 'added'} successfully`,
+        description: `Expense ${currentExpense ? "updated" : "added"} successfully`,
       });
     } catch (error) {
       toast({
@@ -142,9 +187,7 @@ const Expenses = () => {
         <h1 className="text-4xl font-bold">Expenses</h1>
         <div className="flex gap-2">
           <Button 
-            onClick={() => {
-              setIsDialogOpen(true);            
-            }} 
+            onClick={() => setIsDialogOpen(true) } 
             className="bg-black hover:bg-emerald-700 text-white flex items-center gap-2">
             <Plus className="h-4 w-4" />
               New expense
@@ -166,8 +209,10 @@ const Expenses = () => {
 
           {/* output entries of expenses from the database to the frontend, if there are none then it will print a default message*/}
         
-          {expenses.length === 0 ? ( <p className="text-gray-500">No expenses found.</p> ) : 
-            (expenses.map((expense) => (
+          {expenses.length === 0 ? ( 
+            <TableCell className="text-gray-500 text-lg">No expenses found.</TableCell> 
+          ): (
+            expenses.map((expense) => (
                 <TableRow key={expense.id} className="flex-1 items-center px-6 py-3 cursor-auto" onClick={() => handleEdit(expense)}>
 
                   <TableCell className="text-l">{expense.type}</TableCell>

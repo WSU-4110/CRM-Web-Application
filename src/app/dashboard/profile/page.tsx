@@ -1,4 +1,6 @@
 'use client';
+// ProfilePage.tsx
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
@@ -8,20 +10,42 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { getAuth } from "firebase/auth";
 
-export default function Profile() {
-    const [firstName, setFirstName] = useState("");
-    const [lastName, setLastName] = useState("");
-    const [company, setCompany] = useState("");
-    const [businessType, setBusinessType] = useState("");
-    const [timezone, setTimezone] = useState("");
-    const [position, setPosition] = useState("");
+import ProfileGlobalData from "@/src/app/profileGlobalData.ts";
+
+
+
+export default function ProfilePage() {
+    // Singleton Implementation
+    const profileManager = ProfileGlobalData.getInstance();
+
+    const [firstName, setFirstName] = useState(profileManager.getProfileData().firstName);
+    const [lastName, setLastName] = useState(profileManager.getProfileData().lastName);
+    const [company, setCompany] = useState(profileManager.getProfileData().company);
+    const [businessType, setBusinessType] = useState(profileManager.getProfileData().businessType);
+    const [timezone, setTimezone] = useState(profileManager.getProfileData().timezone);
+    const [position, setPosition] = useState(profileManager.getProfileData().position);
 
     const auth = getAuth();
     const userId = auth.currentUser ? auth.currentUser.uid : null;
 
+    // Singleton Implementation
+    const handleInputChange = (key: keyof ProfileDataType, value: string) => {
+        profileManager.setProfileData(key, value); // Singleton Implementation
+        switch (key) {
+            case "firstName": setFirstName(value); break;
+            case "lastName": setLastName(value); break;
+            case "company": setCompany(value); break;
+            case "businessType": setBusinessType(value); break;
+            case "timezone": setTimezone(value); break;
+            case "position": setPosition(value); break;
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const profileData = { firstName, lastName, company, businessType, timezone, position };
+
+        // Singleton Implementation
+        const profileData = profileManager.getProfileData();
 
         for (const [key, value] of Object.entries(profileData)) {
             if (!value) {
@@ -30,11 +54,7 @@ export default function Profile() {
             }
         }
 
-        if (!userId) {
-            console.error("User is not authenticated");
-            return;
-        }
-
+       
         try {
             const response = await fetch("/api/profile-route", {
                 method: "POST",
@@ -52,10 +72,10 @@ export default function Profile() {
     };
 
     return (
-        <div className="container mx-auto flex justify-center items-center min-h-screen ">
-            <Card className="w-full max-w-2xl p-20 bg-white text-black  rounded-lg">
+        <div className="container mx-auto flex justify-center items-center min-h-screen">
+            <Card className="w-full max-w-2xl p-20 bg-white text-black rounded-lg">
                 <CardHeader className="text-center mb-10">
-                    <Avatar src="https://placehold.co/600x400" alt="Profile" className="mx-auto mb-2 border-4 border-gray-300 rounded-full"/>
+                    <Avatar src="https://placehold.co/600x400" alt="Profile" className="mx-auto mb-2 border-4 border-gray-300 rounded-full" />
                     <CardTitle className="text-2xl font-semibold">Placeholder Name</CardTitle>
                     <p className="text-gray-500">Placeholder Email</p>
                 </CardHeader>
@@ -63,19 +83,38 @@ export default function Profile() {
                     <form onSubmit={handleSubmit} className="grid gap-4">
                         <div>
                             <Label>First Name:</Label>
-                            <Input type="text" value={firstName} placeholder="Your First Name" onChange={(e) => setFirstName(e.target.value)} />
+                            <Input
+                                type="text"
+                                value={firstName}
+                                placeholder="Your First Name"
+                                onChange={(e) => handleInputChange("firstName", e.target.value)}
+                            />
                         </div>
                         <div>
                             <Label>Business Type:</Label>
-                            <Input type="text" value={businessType} placeholder="Your Business Type" onChange={(e) => setBusinessType(e.target.value)} />
+                            <Input
+                                type="text"
+                                value={businessType}
+                                placeholder="Your Business Type"
+                                onChange={(e) => handleInputChange("businessType", e.target.value)}
+                            />
                         </div>
                         <div>
                             <Label>Last Name:</Label>
-                            <Input type="text" value={lastName} placeholder="Your Last Name" onChange={(e) => setLastName(e.target.value)} />
+                            <Input
+                                type="text"
+                                value={lastName}
+                                placeholder="Your Last Name"
+                                onChange={(e) => handleInputChange("lastName", e.target.value)}
+                            />
                         </div>
                         <div>
                             <Label>Timezone:</Label>
-                            <Select value={timezone} onValueChange={(value) => setTimezone(value)} className="w-full">
+                            <Select
+                                value={timezone}
+                                onValueChange={(value) => handleInputChange("timezone", value)}
+                                className="w-full"
+                            >
                                 <SelectTrigger>
                                     <SelectValue placeholder="Select Your Timezone" />
                                 </SelectTrigger>
@@ -89,11 +128,21 @@ export default function Profile() {
                         </div>
                         <div>
                             <Label>Company/Organization:</Label>
-                            <Input type="text" value={company} placeholder="Your Company/Org" onChange={(e) => setCompany(e.target.value)} />
+                            <Input
+                                type="text"
+                                value={company}
+                                placeholder="Your Company/Org"
+                                onChange={(e) => handleInputChange("company", e.target.value)}
+                            />
                         </div>
                         <div>
                             <Label>Role/Position:</Label>
-                            <Input type="text" value={position} placeholder="Your Role/Position" onChange={(e) => setPosition(e.target.value)} />
+                            <Input
+                                type="text"
+                                value={position}
+                                placeholder="Your Role/Position"
+                                onChange={(e) => handleInputChange("position", e.target.value)}
+                            />
                         </div>
                         <Button type="submit" className="w-full mt-4 bg-black text-white hover:bg-gray-800">Submit</Button>
                     </form>

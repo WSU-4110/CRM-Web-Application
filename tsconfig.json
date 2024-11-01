@@ -32,8 +32,8 @@
     "**/*.ts",
     "**/*.tsx",
     "../.next/types/**/*.ts",
-    ".next/types/**/*.ts"
-  ],
+    ".next/types/**/*.ts", 
+    "src/app/contexts/ExpenseContext.tsx"  ],
   "exclude": [
     "node_modules"
   ]

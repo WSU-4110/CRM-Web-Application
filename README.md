@@ -41,5 +41,5 @@ Ammar Ahmed (Atem1735)
 Taaseen Khan (khantaseen)
 Aadil Ibrahim (aibra11)
 
-##Credits
+## Credits
 The chatbot is the intellectual property of Vercel inc. and all properiety software related to said component belongs to the respectful owners.

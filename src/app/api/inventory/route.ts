@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-
-import {doc, getDoc, setDoc, updateDoc, arrayUnion } from 'firebase/firestore';
-import { db } from '@/firebaseConfig';
+import { doc, getDoc, setDoc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, storage } from '@/firebaseConfig';
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
@@ -27,24 +27,40 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
-  const { userId, item } = await request.json();
+  const formData = await request.formData();
+  const userId = formData.get('userId');
+  const imageFile = formData.get('image');
+  const itemData = JSON.parse(formData.get('itemData'));
 
-  if (!userId || !item) {
+  if (!userId || !itemData) {
     return NextResponse.json({ error: 'User ID and item data are required' }, { status: 400 });
   }
 
   try {
+    let imageUrl = null;
+    if (imageFile) {
+      const imageRef = ref(storage, `inventory/${userId}/${Date.now()}-${imageFile.name}`);
+      await uploadBytes(imageRef, imageFile);
+      imageUrl = await getDownloadURL(imageRef);
+    }
+
     const docRef = doc(db, 'inventory', userId);
     const docSnap = await getDoc(docRef);
 
+    const itemWithImage = {
+      ...itemData,
+      id: Date.now().toString(),
+      image: imageUrl
+    };
+
     if (docSnap.exists()) {
       await updateDoc(docRef, {
-        inventory: arrayUnion({ ...item, id: Date.now().toString() })
+        inventory: arrayUnion(itemWithImage)
       });
     } else {
       await setDoc(docRef, {
         userId,
-        inventory: [{ ...item, id: Date.now().toString() }]
+        inventory: [itemWithImage]
       });
     }
 
@@ -56,19 +72,31 @@ export async function POST(request) {
 }
 
 export async function PUT(request) {
-  const { userId, item } = await request.json();
+  const formData = await request.formData();
+  const userId = formData.get('userId');
+  const imageFile = formData.get('image');
+  const itemData = JSON.parse(formData.get('itemData'));
 
-  if (!userId || !item || !item.id) {
+  if (!userId || !itemData || !itemData.id) {
     return NextResponse.json({ error: 'User ID, item data, and item ID are required' }, { status: 400 });
   }
 
   try {
+    let imageUrl = itemData.image; // Keep existing image if no new one is uploaded
+    if (imageFile instanceof File) {
+      const imageRef = ref(storage, `inventory/${userId}/${Date.now()}-${imageFile.name}`);
+      await uploadBytes(imageRef, imageFile);
+      imageUrl = await getDownloadURL(imageRef);
+    }
+
     const docRef = doc(db, 'inventory', userId);
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
       const inventory = docSnap.data().inventory;
-      const updatedInventory = inventory.map(i => i.id === item.id ? item : i);
+      const updatedInventory = inventory.map(i => 
+        i.id === itemData.id ? { ...itemData, image: imageUrl } : i
+      );
 
       await updateDoc(docRef, { inventory: updatedInventory });
       return NextResponse.json({ message: 'Item updated successfully' });

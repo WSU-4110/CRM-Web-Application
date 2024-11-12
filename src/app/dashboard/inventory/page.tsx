@@ -43,12 +43,22 @@ export default function InventoryPage() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     const formData = new FormData(event.target);
-    const itemData = Object.fromEntries(formData.entries());
+    const imageFile = formData.get('image');
+    
+    const itemData = Object.fromEntries(
+      Array.from(formData.entries()).filter(([key]) => key !== 'image')
+    );
+
+    const requestFormData = new FormData();
+    requestFormData.append('userId', user.uid);
+    requestFormData.append('itemData', JSON.stringify(itemData));
+    if (imageFile instanceof File && imageFile.size > 0) {
+      requestFormData.append('image', imageFile);
+    }
 
     const response = await fetch('/api/inventory', {
       method: currentItem ? 'PUT' : 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: user.uid, item: { ...itemData, id: currentItem?.id } }),
+      body: requestFormData,
     });
 
     if (response.ok) {
@@ -127,8 +137,23 @@ export default function InventoryPage() {
                 <Input id="count" name="count" type="number" defaultValue={currentItem?.count} required />
               </div>
               <div>
-                <Label htmlFor="image">Image URL</Label>
-                <Input id="image" name="image" type="url" defaultValue={currentItem?.image} />
+                <Label htmlFor="image">Image</Label>
+                <Input 
+                  id="image" 
+                  name="image" 
+                  type="file" 
+                  accept="image/*"
+                  className="cursor-pointer"
+                />
+                {currentItem?.image && (
+                  <div className="mt-2">
+                    <img 
+                      src={currentItem.image} 
+                      alt="Current image" 
+                      className="w-20 h-20 object-cover"
+                    />
+                  </div>
+                )}
               </div>
               <Button type="submit">{currentItem ? 'Update' : 'Add'} Item</Button>
             </div>

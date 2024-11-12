@@ -125,7 +125,7 @@ export function EventMap({ address, eventName }: EventMapProps) {
             center={[coordinates.lat, coordinates.lng]}
             zoom={13}
             scrollWheelZoom={false}
-            style={{ height: '100%', width: '100%' }}
+            style={{ height: '100%', width: '100%', zIndex:3}}
           >
             <TileLayer
             // @ts-ignore

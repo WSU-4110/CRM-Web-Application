@@ -39,7 +39,7 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 Nazeer Abuchaar (NuzNuz)
 Ammar Ahmed (Atem1735)
 Taaseen Khan (khantaseen)
-Aadil Ibrahim (aibra11)
+Aadil Ibraheem (aibra11)
 
 ## Credits
 The chatbot is the intellectual property of Vercel inc. and all properiety software related to said component belongs to the respectful owners.

@@ -15,6 +15,13 @@ import { MoreVertical, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 const Expenses = () => {
   // const expenses = [
@@ -88,6 +95,7 @@ const Expenses = () => {
   const [currentExpense, setCurrentExpense] = useState(null);
   const { user } = useAuth();
   const router = useRouter();
+  const [events, setEvents] = useState([]);
 
   useEffect(() => {
     if (user) {
@@ -97,6 +105,19 @@ const Expenses = () => {
     }
   }, [user, router]);
 
+  useEffect(() => {
+    const fetchEvents = async () => {
+      const response = await fetch(`/api/events?userId=${user.uid}`);
+      if (response.ok) {
+        const data = await response.json();
+        setEvents(data.events || []);
+      }
+    };
+    
+    if (user) {
+      fetchEvents();
+    }
+  }, [user]);
 
   const fetchExpenses = async () => {
     const response = await fetch(`/api/expenses?userId=${user.uid}`);
@@ -116,20 +137,42 @@ const Expenses = () => {
     event.preventDefault();
     const formData = new FormData(event.target);
     const expenseData = Object.fromEntries(formData.entries());
+    
+    try {
+      // First, create/update the expense in the expenses collection
+      const expenseResponse = await fetch(`/api/expenses`, {
+        method: currentExpense ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          userId: user.uid, 
+          expense: { 
+            ...expenseData,
+            id: currentExpense?.id || Date.now().toString()
+          } 
+        }),
+      });
 
-    console.log(expenseData);
-    console.log(currentExpense ? 'PUT' : 'POST');
+      if (!expenseResponse.ok) {
+        throw new Error('Failed to save expense');
+      }
 
-    const response = await fetch(`/api/expenses`, {
-      method: currentExpense ? 'PUT' : 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        userId: user.uid, 
-        expense: { ...expenseData, id: currentExpense?.id } 
-      }),
-    });
+      // If there's an associated event, update it as well
+      if (expenseData.associatedEvent) {
+        const eventResponse = await fetch(`/api/events/associate-expense`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: user.uid,
+            eventId: expenseData.associatedEvent,
+            expense: expenseData
+          })
+        });
 
-    if (response.ok) {
+        if (!eventResponse.ok) {
+          throw new Error('Failed to associate expense with event');
+        }
+      }
+      
       fetchExpenses();
       setIsDialogOpen(false);
       setCurrentExpense(null);
@@ -137,15 +180,14 @@ const Expenses = () => {
         title: "Success",
         description: `Expense ${currentExpense ? 'updated' : 'added'} successfully`,
       });
-    } else {
+    } catch (error) {
       toast({
         title: "Error",
-        description: `Failed to ${currentExpense ? 'update' : 'add'} expense`,
+        description: error.message,
         variant: "destructive",
       });
     }
   };
-
 
   const handleEdit = (expense) => {
     setCurrentExpense(expense);
@@ -243,6 +285,21 @@ const Expenses = () => {
                   <option value="Approved">Approved</option>
                   <option value="Not Approved">Not Approved</option>
                 </select>
+              </div>
+              <div>
+                <Label htmlFor="associatedEvent">Associated Event (Optional)</Label>
+                <Select name="associatedEvent" defaultValue={currentExpense?.associatedEvent}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select an event..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {events.map((event) => (
+                      <SelectItem key={event.id} value={event.id}>
+                        {event.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <Button type="submit">{currentExpense ? 'Update' : 'Add'} Expense</Button>
             </div>

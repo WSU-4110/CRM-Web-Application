@@ -12,7 +12,8 @@ import {
   IconCalendarMonth,
   IconBuildingWarehouse,
   IconLogout2,
-  IconTicket
+  IconTicket,
+  IconRobot
 
 } from "@tabler/icons-react";
 import Link from "next/link";
@@ -51,10 +52,10 @@ export function SidebarDemo() {
       ),
     },
     {
-      label: "Settings",
-      href: "#",
+      label: "Assistant",
+      href: "/dashboard/AiAssistant",
       icon: (
-        <IconSettings className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+        <IconRobot className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
       ),
     },
     {
@@ -94,7 +95,7 @@ export function SidebarDemo() {
   },
   {
     label: "Analytics",  
-    href: "/dashboard/analytics",  
+    href: "/dashboard/profits",  
     icon: (
       <IconUsers className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
     ),

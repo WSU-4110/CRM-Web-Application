@@ -6,7 +6,7 @@ import { EventMap } from "@/components/event-map"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
-import { Plus, Pencil, Trash2, PlusCircle } from "lucide-react"
+import { Plus, Pencil, Trash2, PlusCircle, Copy } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -59,6 +59,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
   const [availableInventory, setAvailableInventory] = useState<EventDetail['inventory']>([])
   const { toast } = useToast()
   const [customers, setCustomers] = useState<Customer[]>([])
+  const [paymentLink, setPaymentLink] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -142,22 +143,79 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
     }))
   }
 
+  const generatePaymentLink = async () => {
+    try {
+      const response = await fetch('/api/stripe/create-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          price: event.price,
+          eventName: event.name,
+          eventId: event.id,
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to generate payment link');
+      
+      const data = await response.json();
+      setPaymentLink(data.url);
+      toast({
+        title: "Success",
+        description: "Payment link generated successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to generate payment link",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const copyPaymentLink = () => {
+    if (paymentLink) {
+      navigator.clipboard.writeText(paymentLink);
+      toast({
+        title: "Success",
+        description: "Payment link copied to clipboard",
+      });
+    }
+  };
+
   if (!event) return <div>Loading...</div>
 
   return (
     <div className="container mx-auto py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">{event.name}</h1>
-        <Button
-          onClick={() => {
-            setEditedEvent(event)
-            setIsEditing(true)
-          }}
-          className="bg-black hover:bg-emerald-700"
-        >
-          <Pencil className="h-4 w-4 mr-2" />
-          Edit Event
-        </Button>
+        <div className="flex gap-2">
+          {paymentLink ? (
+            <Button
+              onClick={copyPaymentLink}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              <Copy className="h-4 w-4 mr-2" />
+              Copy Payment Link
+            </Button>
+          ) : (
+            <Button
+              onClick={generatePaymentLink}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              Generate Payment Link
+            </Button>
+          )}
+          <Button
+            onClick={() => {
+              setEditedEvent(event)
+              setIsEditing(true)
+            }}
+            className="bg-black hover:bg-emerald-700"
+          >
+            <Pencil className="h-4 w-4 mr-2" />
+            Edit Event
+          </Button>
+        </div>
       </div>
 
       <Dialog open={isEditing} onOpenChange={setIsEditing}>

@@ -78,6 +78,30 @@ const ProfitsPerItemPage = () => {
     setIsDialogOpen(true);
   };
 
+  const handleDelete = async (item) => {
+    
+
+    try {
+      const response = await fetch(`/api/profit-per-item`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user?.uid, itemId: item.id }),
+      });
+
+      if (response.ok) {
+        const updatedItems = items.filter((i) => i.id !== item.id);
+        setItems(updatedItems);
+        toast({ title: "Success", description: "Item deleted successfully!" });
+        setIsDialogOpen(false);
+      } else {
+        throw new Error("Failed to delete item");
+      }
+    } catch (error) {
+      console.error(error);
+      toast({ title: "Error", description: "Failed to delete item", variant: "destructive" });
+    }
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -142,7 +166,7 @@ const ProfitsPerItemPage = () => {
             <TableHead>Cost</TableHead>
             <TableHead>Profit</TableHead>
             <TableHead>Profit per Item/Service</TableHead>
-            <TableHead>Edit</TableHead>
+            <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -177,7 +201,7 @@ const ProfitsPerItemPage = () => {
       <Dialog open={isDialogOpen} onOpenChange={handleDialogChange}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{currentItem ? "Edit Item" : "Add New Item"}</DialogTitle>
+            <DialogTitle>{currentItem ? "Edit/Delete Item" : "Add New Item"}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -195,7 +219,7 @@ const ProfitsPerItemPage = () => {
               </select>
             </div>
             <div>
-              <Label htmlFor="itemName">Item Name</Label>
+              <Label htmlFor="itemName">Item/Service Name</Label>
               <Input id="itemName" name="itemName" value={formData.itemName} onChange={handleChange} required />
             </div>
             <div>
@@ -210,9 +234,19 @@ const ProfitsPerItemPage = () => {
               <Label htmlFor="cost">Cost ($)</Label>
               <Input id="cost" name="cost" type="number" value={formData.cost} onChange={handleChange} required />
             </div>
-            <Button type="submit" className="bg-black text-white">
-              {currentItem ? "Update Item" : "Add Item"}
-            </Button>
+            <div className="flex justify-between">
+              <Button type="submit" className="bg-black text-white">
+                {currentItem ? "Update Item" : "Add Item"}
+              </Button>
+              {currentItem && (
+                <Button
+                  type="button"
+                  onClick={() => handleDelete(currentItem)}
+                  className="bg-red-600 text-white">
+                  Delete
+                </Button>
+              )}
+            </div>
           </form>
         </DialogContent>
       </Dialog>

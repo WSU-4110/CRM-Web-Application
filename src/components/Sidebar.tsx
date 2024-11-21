@@ -13,7 +13,8 @@ import {
   IconBuildingWarehouse,
   IconLogout2,
   IconTicket,
-  IconRobot
+  IconRobot,
+  IconCoin
 
 } from "@tabler/icons-react";
 import Link from "next/link";
@@ -97,7 +98,7 @@ export function SidebarDemo() {
     label: "Profits",  
     href: "/dashboard/profits",  
     icon: (
-      <IconUsers className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      <IconCoin className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
     ),
   },
     {

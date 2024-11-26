@@ -84,6 +84,49 @@ const Customers = () => {
     }
   };
 
+  const [isMessageDialogOpen, setIsMessageDialogOpen] = useState(false);
+  const [messageCustomer, setMessageCustomer] = useState(null);
+  const [subject, setSubject] = useState('');
+  const [emailContent, setEmailContent] = useState('');
+
+  const handleMessage = (customer) => {
+    setMessageCustomer(customer);
+    setIsMessageDialogOpen(true);
+  };
+
+  const handleSendEmail = async (event) => {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    const expenseData = Object.fromEntries(formData.entries());
+    console.log(user.uid, messageCustomer.emailAddress, subject, emailContent);
+    const response = await fetch('/api/send-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: user.email,
+        to: messageCustomer.emailAddress,
+        subject: subject,
+        message: emailContent,
+      }),
+    });
+    if (response.ok) {
+      toast({
+        title: "Success",
+        description: "Email sent successfully",
+      });
+      setIsMessageDialogOpen(false);
+      setMessageCustomer(null);
+      setSubject('');
+      setEmailContent('');
+    } else {
+      toast({
+        title: "Error",
+        description: "Failed to send email",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="container mx-auto p-4">
     <h1 className="text-2xl font-bold mb-4">Manage Your Customers</h1>
@@ -97,6 +140,7 @@ const Customers = () => {
         <TableCell className="">Phone Number</TableCell>
         <TableCell className="">Email Address</TableCell>
         <TableCell className="">Actions</TableCell>
+        <TableCell className=""></TableCell>
       </TableRow>
     <TableBody>
       {customers.length === 0 ? (
@@ -113,12 +157,15 @@ const Customers = () => {
             <TableCell className="p-2">
               <Button onClick={(e) => { e.stopPropagation(); handleEdit(customer); }}>Edit</Button>
             </TableCell>
+            <TableCell className="p-2">
+              <Button onClick={(e) => { e.stopPropagation(); handleMessage(customer); }}>Message</Button>
+            </TableCell>
           </TableRow>
         ))
       )}
     </TableBody>
   </Table>
-</Card>
+  </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={handleDialogChange}>
         <DialogContent>
@@ -146,6 +193,27 @@ const Customers = () => {
           </form>
         </DialogContent>
       </Dialog>
+
+
+      <Dialog open={isMessageDialogOpen} onOpenChange={setIsMessageDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Send Email to {messageCustomer?.firstName} {messageCustomer?.lastName}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSendEmail} className="space-y-4">
+            <div className="flex flex-col space-y-1">
+              <Label htmlFor="subject">Subject</Label>
+              <Input id="subject" name="subject" value={subject} onChange={(e) => setSubject(e.target.value)} required />
+            </div>
+            <div className="flex flex-col space-y-1">
+              <Label htmlFor="emailContent">Email Content</Label>
+              <textarea id="emailContent" name="emailContent" value={emailContent} onChange={(e) => setEmailContent(e.target.value)} required className="p-2 border rounded-md" />
+            </div>
+            <Button type="submit" className="mt-4">Send Email</Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 };

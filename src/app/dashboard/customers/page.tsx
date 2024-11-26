@@ -96,19 +96,14 @@ const Customers = () => {
 
   const handleSendEmail = async (event) => {
     event.preventDefault();
-    const formData = new FormData(event.target);
-    const expenseData = Object.fromEntries(formData.entries());
-
-    console.log(user.uid, messageCustomer.emailAddress, subject, emailContent);
-
     const response = await fetch('/api/send-email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        from: user.email,
-        to: messageCustomer.emailAddress,
-        subject: subject,
-        message: emailContent,
+        userId: user.uid,
+        customerId: messageCustomer.id,
+        subject,
+        emailContent,
       }),
     });
     if (response.ok) {

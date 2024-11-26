@@ -91,7 +91,7 @@ const ProfitsPerItemPage = () => {
       if (response.ok) {
         const updatedItems = items.filter((i) => i.id !== item.id);
         setItems(updatedItems);
-        toast({ title: "Success", description: "Item deleted successfully!" });
+        toast({ title: "Success", description: "Item deleted." });
         setIsDialogOpen(false);
       } else {
         throw new Error("Failed to delete item");
@@ -242,7 +242,7 @@ const ProfitsPerItemPage = () => {
                 <Button
                   type="button"
                   onClick={() => handleDelete(currentItem)}
-                  className="bg-red-600 text-white">
+                  className="bg-red-600 text-white hover:bg-red-500">
                   Delete
                 </Button>
               )}

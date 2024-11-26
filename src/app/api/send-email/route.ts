@@ -19,7 +19,7 @@ export async function POST(req) {
     // Send the email using sg
     await sg.send({
       to: to,
-      from: "taaseenmkhan@gmail.com", // Verified sender email in sg
+      from: "crmwebapplab@gmail.com", // Verified sender email in sg
       subject: subject,
       text: message,
     });

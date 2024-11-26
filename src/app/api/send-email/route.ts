@@ -1,35 +1,35 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import nodemailer from 'nodemailer';
+import { NextResponse } from 'next/server';
+import sg from '@sendgrid/mail';
 
-export async function POST(req: NextApiRequest, res: NextApiResponse) {
+sg.setApiKey(process.env.SENDGRID_API_KEY);
 
-    const { email, subject, message } = req.body;
+export async function POST(req) {
+  try {
+    // Parse the request body
+    const { from, to, subject, message } = await req.json();
 
-    if (!email || !subject || !message) {
-        return res.status(400).json({ error: 'Missing required fields' });
+    console.log("From:", from, "To:", to, "subject:", subject, "Message: ", message);
+    if (!to || !subject || !message) {
+      return NextResponse.json(
+        { error: 'Missing required fields: to, subject, message' },
+        { status: 400 }
+      );
     }
 
-    try {
-        const transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS,
-            },
-        });
+    // Send the email using sg
+    await sg.send({
+      to: to,
+      from: "taaseenmkhan@gmail.com", // Verified sender email in sg
+      subject: subject,
+      text: message,
+    });
 
-        const mailOptions = {
-            from: process.env.EMAIL_USER,
-            to: email,
-            subject: subject,
-            text: message,
-        };
-
-        await transporter.sendMail(mailOptions);
-
-        return res.status(200).json({ message: 'Email sent successfully' });
-    } catch (error) {
-        return res.status(500).json({ error: 'Failed to send email' });
-    }
-    
+    return NextResponse.json({ success: true, message: 'Email sent successfully' });
+  } catch (error) {
+    console.error('sg error:', error);
+    return NextResponse.json(
+      { error: 'Failed to send email', details: error.message },
+      { status: 500 }
+    );
+  }
 }

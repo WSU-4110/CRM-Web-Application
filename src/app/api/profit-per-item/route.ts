@@ -27,7 +27,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const { userId, item } = await request.json(); // Update to match frontend
+    const { userId, item } = await request.json(); 
 
     // Validate userId
     if (!userId || typeof userId !== "string") {
@@ -104,4 +104,30 @@ export async function PUT(request: Request) {
     console.error("Error updating item:", error);
     return NextResponse.json({ error: "Failed to update item" }, { status: 500 });
   }
+}
+
+export async function DELETE(request: Request) {
+  const { userId, itemId } = await request.json();
+
+  if (!userId || !itemId) {
+    return NextResponse.json({ error: "User ID and Item ID are required" }, { status: 400 });
+  }
+
+  try {
+    const docRef = doc(db, "profits", userId);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      const items = docSnap.data().items || [];
+      const updatedItems = items.filter((item: any) => item.id !== itemId);
+
+      await updateDoc(docRef, { items: updatedItems });
+      return NextResponse.json({ message: "Item deleted successfully" });
+    } else {
+      return NextResponse.json({ error: "No profits data found for this user" }, { status: 404 });
+    }
+  } catch (error) {
+    console.error("Error deleting item:", error);
+    return NextResponse.json({ error: "Failed to delete item" }, { status: 500 });
+  } 
 }

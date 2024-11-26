@@ -1,37 +1,60 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { MoreVertical, Plus } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
-
+import React, { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { MoreVertical, Plus } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/app/contexts/AuthContext";
 
 const ProfitsPerItemPage = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [items, setItems] = useState([]);
+  const [currentItem, setCurrentItem] = useState(null);
   const [formData, setFormData] = useState({
-    type: '',
-    itemName: '',
-    unitsSold: '',
-    revenue: '',
-    cost: '',
+    type: "",
+    itemName: "",
+    unitsSold: "",
+    revenue: "",
+    cost: "",
   });
+  const { user } = useAuth();
 
-  const revenue = parseFloat(formData.revenue) || 0;
-  const cost = parseFloat(formData.cost) || 0;
-  const unitsSold = parseFloat(formData.unitsSold) || 0;
+  // Fetch items when the page loads
+  useEffect(() => {
+    const fetchItems = async () => {
+      if (!user?.uid) {
+        console.error("User ID is missing");
+        toast({ title: "Error", description: "User ID is required to fetch items.", variant: "destructive" });
+        return;
+      }
 
-  const profit = revenue - cost;
-  const profitPerItem = unitsSold > 0 ? profit / unitsSold : 0;
+      try {
+        const response = await fetch(`/api/profit-per-item?userId=${user.uid}`);
+        if (response.ok) {
+          const data = await response.json();
+          setItems(data.items || []);
+        } else {
+          console.error("Failed to fetch items:", response.statusText);
+          toast({ title: "Error", description: "Failed to fetch items", variant: "destructive" });
+        }
+      } catch (error) {
+        console.error("Error fetching items:", error);
+        toast({ title: "Error", description: "Failed to fetch items", variant: "destructive" });
+      }
+    };
+
+    fetchItems();
+  }, [user]);
 
   const handleDialogChange = (open) => {
     setIsDialogOpen(open);
     if (!open) {
-      setFormData({ type: '', itemName: '', unitsSold: '', revenue: '', cost: '' });
+      setCurrentItem(null);
+      setFormData({ type: "", itemName: "", unitsSold: "", revenue: "", cost: "" });
     }
   };
 
@@ -43,64 +66,68 @@ const ProfitsPerItemPage = () => {
     }));
   };
 
+  const handleEdit = (item) => {
+    setCurrentItem(item);
+    setFormData({
+      type: item.type,
+      itemName: item.itemName,
+      unitsSold: item.unitsSold,
+      revenue: item.revenue,
+      cost: item.cost,
+    });
+    setIsDialogOpen(true);
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
-  
-    const newItem = {
-      type: formData.type,
-      itemName: formData.itemName,
-      unitsSold: unitsSold.toString(),
-      revenue: revenue.toFixed(2),
-      cost: cost.toFixed(2),
-      profit: profit.toFixed(2),
-      profitPerItem: profitPerItem.toFixed(2),
+
+    const updatedItem = {
+      id: currentItem?.id || Date.now().toString(), // Generate a unique ID
+      ...formData,
+      unitsSold: parseFloat(formData.unitsSold) || 0,
+      revenue: parseFloat(formData.revenue) || 0,
+      cost: parseFloat(formData.cost) || 0,
+      profit: ((parseFloat(formData.revenue) || 0) - (parseFloat(formData.cost) || 0)).toFixed(2),
+      profitPerItem:
+        parseFloat(formData.unitsSold) > 0
+          ? (((parseFloat(formData.revenue) || 0) - (parseFloat(formData.cost) || 0)) / parseFloat(formData.unitsSold)).toFixed(2)
+          : "0.00",
     };
 
-    
-  
-    // Send data to Firebase via the API route
     try {
-      const response = await fetch('/api/profit-per-item', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newItem),
+      const response = await fetch("/api/profit-per-item", {
+        method: currentItem ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user?.uid, item: updatedItem }),
       });
-  
+
       if (response.ok) {
         const result = await response.json();
-        console.log('Item added to Firebase with ID:', result.id);
-
-        toast({
-          title: "Success",
-          description: "Item added successfully!",
-        });
-
+        const updatedItems = currentItem
+          ? items.map((item) => (item.id === currentItem.id ? updatedItem : item))
+          : [...items, updatedItem];
+        updatedItems.sort((a, b) => parseFloat(b.profitPerItem) - parseFloat(a.profitPerItem)); // Sort by profit per item
+        setItems(updatedItems);
+        toast({ title: "Success", description: `Item ${currentItem ? "updated" : "added"} successfully!` });
+        setIsDialogOpen(false);
+        setCurrentItem(null);
       } else {
-        console.error('Error adding item to Firebase:', response.statusText);
+        throw new Error("Failed to save item");
       }
     } catch (error) {
-      console.error('Error adding item to Firebase:', error);
+      console.error(error);
+      toast({ title: "Error", description: "Failed to save item", variant: "destructive" });
     }
-  
-    // Update local state to display item on the page
-    const updatedItems = [
-      ...items,
-      newItem,
-    ];
-  
-    updatedItems.sort((a, b) => parseFloat(b.profitPerItem) - parseFloat(a.profitPerItem));
-    setItems(updatedItems);
-    setIsDialogOpen(false);
   };
-  
 
   return (
     <div className="min-h-screen w-full p-6">
       <div className="flex justify-between items-center my-6">
         <h1 className="text-4xl font-bold">Profits Per Item/Service</h1>
-        <Button 
+        <Button
           onClick={() => setIsDialogOpen(true)}
-          className="bg-black hover:bg-emerald-700 text-white flex items-center gap-2">
+          className="bg-black hover:bg-emerald-700 text-white flex items-center gap-2"
+        >
           <Plus className="h-4 w-4" />
           New item
         </Button>
@@ -108,29 +135,39 @@ const ProfitsPerItemPage = () => {
 
       <Table>
         <TableHeader>
-          <TableRow className="text-xl">
+          <TableRow>
             <TableHead>Item/Service Name</TableHead>
             <TableHead>Units Sold</TableHead>
             <TableHead>Revenue</TableHead>
             <TableHead>Cost</TableHead>
             <TableHead>Profit</TableHead>
             <TableHead>Profit per Item/Service</TableHead>
+            <TableHead>Edit</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {items.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={6} className="text-center text-gray-500">No items found.</TableCell>
+              <TableCell colSpan={7} className="text-center text-gray-500">
+                No items found.
+              </TableCell>
             </TableRow>
           ) : (
-            items.map((item, index) => (
-              <TableRow key={index}>
-                <TableCell className="text-l">{item.itemName} ({item.type})</TableCell>
-                <TableCell className="text-l">{item.unitsSold}</TableCell>
-                <TableCell className="text-l">${item.revenue}</TableCell>
-                <TableCell className="text-l">${item.cost}</TableCell>
-                <TableCell className="text-l">${item.profit}</TableCell>
-                <TableCell className="text-l">${item.profitPerItem}</TableCell>
+            items.map((item) => (
+              <TableRow key={item.id}>
+                <TableCell>
+                  {item.itemName} {item.type ? `(${item.type})` : ""}
+                </TableCell>
+                <TableCell>{item.unitsSold}</TableCell>
+                <TableCell>${item.revenue}</TableCell>
+                <TableCell>${item.cost}</TableCell>
+                <TableCell>${item.profit}</TableCell>
+                <TableCell>${item.profitPerItem}</TableCell>
+                <TableCell>
+                  <button onClick={() => handleEdit(item)}>
+                    <MoreVertical className="text-gray-400 hover:text-gray-300" />
+                  </button>
+                </TableCell>
               </TableRow>
             ))
           )}
@@ -140,10 +177,9 @@ const ProfitsPerItemPage = () => {
       <Dialog open={isDialogOpen} onOpenChange={handleDialogChange}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add New Item</DialogTitle>
+            <DialogTitle>{currentItem ? "Edit Item" : "Add New Item"}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
-            
             <div>
               <Label htmlFor="type">Type</Label>
               <select
@@ -152,12 +188,12 @@ const ProfitsPerItemPage = () => {
                 value={formData.type}
                 onChange={handleChange}
                 required
-                className="w-full border rounded px-3 py-2">
+                className="w-full border rounded px-3 py-2"
+              >
                 <option value="Item">Item</option>
                 <option value="Service">Service</option>
               </select>
             </div>
-
             <div>
               <Label htmlFor="itemName">Item Name</Label>
               <Input id="itemName" name="itemName" value={formData.itemName} onChange={handleChange} required />
@@ -168,13 +204,15 @@ const ProfitsPerItemPage = () => {
             </div>
             <div>
               <Label htmlFor="revenue">Revenue ($)</Label>
-              <Input id="revenue" name="revenue" type="number" step="10.0" value={formData.revenue} onChange={handleChange} required />
+              <Input id="revenue" name="revenue" type="number" value={formData.revenue} onChange={handleChange} required />
             </div>
             <div>
               <Label htmlFor="cost">Cost ($)</Label>
-              <Input id="cost" name="cost" type="number" step="10.0" value={formData.cost} onChange={handleChange} required />
+              <Input id="cost" name="cost" type="number" value={formData.cost} onChange={handleChange} required />
             </div>
-            <Button type="submit" className="bg-black text-white">Add Item</Button>
+            <Button type="submit" className="bg-black text-white">
+              {currentItem ? "Update Item" : "Add Item"}
+            </Button>
           </form>
         </DialogContent>
       </Dialog>

@@ -76,7 +76,10 @@ const ChatInterface = () => {
 
           temperature: 0.7, // spotaneous regulation
 
-          stop_sequences: ['\n'], // if new line feed detected then stop
+        
+
+
+          
         
         }
       ),

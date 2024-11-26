@@ -48,4 +48,4 @@ Taaseen Khan (khantaseen)
 Aadil Ibraheem (aibra11)
 
 ## Credits
-The chatbot is the intellectual property of Vercel inc. and all properiety software related to said component belongs to the respectful owners.
+The chatbot is the intellectual property of Vercel And Cohere inc. and all properiety software related to said component belongs to the respectful owners.

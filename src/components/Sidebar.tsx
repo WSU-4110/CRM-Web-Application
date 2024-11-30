@@ -47,20 +47,6 @@ export function SidebarDemo() {
       ),
     },
     {
-      label: "Profile",
-      href: "/dashboard/profile",
-      icon: (
-        <IconUserBolt className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-      ),
-    },
-    {
-      label: "Assistant",
-      href: "/dashboard/AiAssistant",
-      icon: (
-        <IconRobot className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-      ),
-    },
-    {
       label: "Events",
       href: "/dashboard/events",
       icon: (
@@ -89,31 +75,31 @@ export function SidebarDemo() {
       ),
     },
     {
-    label: "Customers",  
-    href: "/dashboard/customers",  
-    icon: (
-      <IconUsers className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-    ),
-  },
-  {
-    label: "Profits",  
-    href: "/dashboard/profits",  
-    icon: (
-      <IconCoin className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-    ),
-  },
-  {
-    label: "Analytics",
-    href: "/dashboard/analytics",
-    icon: (
-      <IconChartHistogram className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-    ),
-  },
-    {
-      label: "Logout",
-      href: "#",
+      label: "Customers",  
+      href: "/dashboard/customers",  
       icon: (
-        <IconLogout2 className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+        <IconUsers className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      ),
+    },
+    {
+      label: "Profits",  
+      href: "/dashboard/profits",  
+      icon: (
+        <IconCoin className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      ),
+    },
+    {
+      label: "Profile",
+      href: "/dashboard/profile",
+      icon: (
+        <IconUserBolt className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      ),
+    },
+    {
+      label: "Assistant",
+      href: "/dashboard/AiAssistant",
+      icon: (
+        <IconRobot className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
       ),
     },
   ];

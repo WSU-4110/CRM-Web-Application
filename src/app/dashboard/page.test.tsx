@@ -16,4 +16,15 @@ describe('Page', () => {
  
     expect(heading).toBeInTheDocument()
   })
+
+  it('renders the word Dashboard', () => {
+    render(
+      <AuthProvider>
+        <DashboardDemo />
+      </AuthProvider>
+    )
+
+    const dashboardText = screen.getByText(/dashboard/i)
+    expect(dashboardText).toBeInTheDocument()
+  })
 })

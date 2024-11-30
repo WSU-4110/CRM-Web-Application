@@ -1,6 +1,7 @@
 "use client"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { EventFormService } from "@/lib/EventFormService"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -47,28 +48,15 @@ export function EventForm() {
 
   const auth = useAuth()
 
+  const eventFormService = new EventFormService()
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true)
-     
-        const userId =  auth.user.uid
-
-        const customersRes = await fetch(`/api/customers?userId=${userId}`)
-        const customersData = await customersRes.json()
-        
-        if (customersData.error) {
-          throw new Error(customersData.error)
-        }
-        
-        setCustomers(Array.isArray(customersData.customers) ? customersData.customers : [])
-
-    
-        const inventoryRes = await fetch(`/api/inventory?userId=${userId}`)
-        const inventoryData = await inventoryRes.json()
-        console.log(inventoryData)
-        setInventory(Array.isArray(inventoryData.inventory) ? inventoryData.inventory : [])
-
+        const { customers, inventory } = await eventFormService.fetchInitialData(auth.user.uid)
+        setCustomers(customers)
+        setInventory(inventory)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch data')
         console.error('Error fetching data:', err)
@@ -77,33 +65,12 @@ export function EventForm() {
       }
     }
     fetchData()
-  }, [])
+  }, [auth.user.uid])
 
   const handleQuantityChange = (item: InventoryItem, change: number) => {
-    const existingItem = selectedInventory.find(i => i.id === item.id)
-    const currentCount = existingItem?.count || 0
-    const newCount = currentCount + change
-
-    if (newCount === 0) {
-      setSelectedInventory(selectedInventory.filter(i => i.id !== item.id))
-      return
-    }
-
-    if (newCount > parseInt(item.count)) return
-
-    if (existingItem) {
-      setSelectedInventory(selectedInventory.map(i => 
-        i.id === item.id ? { ...i, count: newCount } : i
-      ))
-    } else {
-      setSelectedInventory([...selectedInventory, {
-        id: item.id,
-        name: item.name,
-        count: newCount,
-        price: item.price,
-        image: item.image
-      }])
-    }
+    setSelectedInventory(current => 
+      eventFormService.calculateInventoryChange(current, item, change)
+    )
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -117,21 +84,17 @@ export function EventForm() {
       date: formData.get("date"),
       time: formData.get("time"),
       address: formData.get("address"),
-      inventory: selectedInventory.length > 0 ? selectedInventory : [],
+      inventory: selectedInventory,
       notes: formData.get("notes"),
       userId: auth.user.uid
     }
-    const userId =  auth.user.uid
-    const response = await fetch(`/api/events`, {
-      method: "POST",
-      body: JSON.stringify(eventData),
-      headers: {
-        "Content-Type": "application/json"
-      }
-    })
 
-    if (response.ok) {
+    try {
+      //@ts-ignore  
+      await eventFormService.submitEventForm(eventData)
       router.push("/dashboard/events")
+    } catch (error) {
+      setError('Failed to submit event')
     }
   }
 

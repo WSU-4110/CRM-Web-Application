@@ -91,7 +91,7 @@ const ProfitsPerItemPage = () => {
       if (response.ok) {
         const updatedItems = items.filter((i) => i.id !== item.id);
         setItems(updatedItems);
-        toast({ title: "Success", description: "Item deleted." });
+        toast({ title: "Success", description: "Item deleted successfully!" });
         setIsDialogOpen(false);
       } else {
         throw new Error("Failed to delete item");
@@ -172,9 +172,7 @@ const ProfitsPerItemPage = () => {
         <TableBody>
           {items.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={7} className="text-center text-gray-500">
-                No items found.
-              </TableCell>
+              <TableCell colSpan={7} className="text-center text-gray-500">No items found.</TableCell>
             </TableRow>
           ) : (
             items.map((item) => (
@@ -242,9 +240,7 @@ const ProfitsPerItemPage = () => {
                 <Button
                   type="button"
                   onClick={() => handleDelete(currentItem)}
-                  className="bg-red-600 text-white hover:bg-red-500">
-                  Delete
-                </Button>
+                  className="bg-red-600 text-white">Delete</Button>
               )}
             </div>
           </form>

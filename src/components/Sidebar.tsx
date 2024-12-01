@@ -14,8 +14,7 @@ import {
   IconLogout2,
   IconTicket,
   IconRobot,
-  IconCoin,
-  IconChartHistogram
+  IconCoin
 
 } from "@tabler/icons-react";
 import Link from "next/link";
@@ -100,13 +99,6 @@ export function SidebarDemo() {
     href: "/dashboard/profits",  
     icon: (
       <IconCoin className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-    ),
-  },
-  {
-    label: "Analytics",
-    href: "/dashboard/analytics",
-    icon: (
-      <IconChartHistogram className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
     ),
   },
     {

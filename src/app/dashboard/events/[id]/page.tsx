@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
+import { EventService } from "@/lib/EventService"
 
 interface EventDetail {
   id: string
@@ -60,44 +61,30 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
   const { toast } = useToast()
   const [customers, setCustomers] = useState<Customer[]>([])
   const [paymentLink, setPaymentLink] = useState<string | null>(null);
+  const eventService = new EventService()
 
   useEffect(() => {
-    const fetchEvent = async () => {
-      const response = await fetch(`/api/events/${params.id}?userId=${user.uid}`)
-      const data = await response.json()
-      console.log(data)
-      setEvent(data)
+    const fetchData = async () => {
+      try {
+        const eventData = await eventService.fetchEvent(params.id, user.uid)
+        setEvent(eventData)
+
+        const inventoryData = await eventService.fetchAvailableInventory(user.uid)
+        setAvailableInventory(inventoryData.inventory || [])
+
+        const customerData = await eventService.fetchCustomers(user.uid)
+        setCustomers(customerData.customers || [])
+      } catch (error) {
+        console.error('Error fetching data:', error)
+      }
     }
 
-    const fetchAvailableInventory = async () => {
-      const response = await fetch(`/api/inventory?userId=${user.uid}`)
-      const data = await response.json()
-      setAvailableInventory(data.inventory || [])
-    }
-
-    const fetchCustomers = async () => {
-      const response = await fetch(`/api/customers?userId=${user.uid}`)
-      const data = await response.json()
-      console.log(data)
-      setCustomers(data.customers || [])
-    }
-
-    fetchEvent()
-    fetchAvailableInventory()
-    fetchCustomers()
+    fetchData()
   }, [params.id, user.uid])
 
   const handleUpdateEvent = async () => {
     try {
-      const response = await fetch(`/api/events/${params.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...editedEvent, userId: user.uid }),
-      })
-      
-      if (!response.ok) throw new Error('Failed to update event')
-      
-      const updatedEvent = await response.json()
+      const updatedEvent = await eventService.updateEvent(params.id, editedEvent!, user.uid)
       setEvent(updatedEvent)
       setIsEditing(false)
       setIsInventoryDialogOpen(false)
@@ -145,32 +132,24 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
 
   const generatePaymentLink = async () => {
     try {
-      const response = await fetch('/api/stripe/create-checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          price: event.price,
-          eventName: event.name,
-          eventId: event.id,
-        }),
-      });
-
-      if (!response.ok) throw new Error('Failed to generate payment link');
-      
-      const data = await response.json();
-      setPaymentLink(data.url);
+      const response = await eventService.generatePaymentLink(
+        event.price,
+        event.name,
+        event.id
+      )
+      setPaymentLink(response.url)
       toast({
         title: "Success",
         description: "Payment link generated successfully",
-      });
+      })
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to generate payment link",
         variant: "destructive",
-      });
+      })
     }
-  };
+  }
 
   const copyPaymentLink = () => {
     if (paymentLink) {

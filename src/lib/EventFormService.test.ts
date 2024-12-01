@@ -1,5 +1,7 @@
 import { EventFormService } from './EventFormService';
 
+console.log('\n🧪 Starting EventFormService Tests...\n');
+
 describe('EventFormService', () => {
   let service: EventFormService;
   
@@ -8,8 +10,11 @@ describe('EventFormService', () => {
     global.fetch = jest.fn();
   });
 
-  describe('fetchInitialData', () => {
-    it('should fetch customers and inventory data successfully', async () => {
+  describe('📥 fetchInitialData', () => {
+    console.log('Testing fetchInitialData functionality...');
+
+    it('✅ should fetch customers and inventory data successfully', async () => {
+      console.log('  → Testing successful data fetch');
       const mockCustomers = [{ firstName: 'John', phone: '123' }];
       const mockInventory = [{ id: '1', name: 'Item 1', count: '5' }];
 
@@ -30,9 +35,11 @@ describe('EventFormService', () => {
         inventory: mockInventory
       });
       expect(global.fetch).toHaveBeenCalledTimes(2);
+      console.log('  ✓ Successfully fetched both customers and inventory');
     });
 
-    it('should handle empty arrays', async () => {
+    it('✅ should handle empty arrays', async () => {
+      console.log('  → Testing empty data handling');
       (global.fetch as jest.Mock)
         .mockImplementationOnce(() => Promise.resolve({
           ok: true,
@@ -49,10 +56,13 @@ describe('EventFormService', () => {
         customers: [],
         inventory: []
       });
+      console.log('  ✓ Successfully handled null/empty data');
     });
   });
 
-  describe('calculateInventoryChange', () => {
+  describe('🔄 calculateInventoryChange', () => {
+    console.log('\nTesting inventory calculations...');
+    
     const mockItem = {
       id: '1',
       name: 'Test Item',
@@ -61,36 +71,45 @@ describe('EventFormService', () => {
       image: 'test.jpg'
     };
 
-    it('should add new item to inventory', () => {
+    it('✅ should add new item to inventory', () => {
+      console.log('  → Testing adding new item');
       const result = service.calculateInventoryChange([], mockItem, 1);
       expect(result).toHaveLength(1);
       expect(result[0]).toEqual({
         ...mockItem,
         count: 1
       });
+      console.log('  ✓ Successfully added new item to inventory');
     });
 
-    it('should remove item when count becomes zero', () => {
+    it('✅ should remove item when count becomes zero', () => {
+      console.log('  → Testing item removal');
       const initial = [{
         ...mockItem,
         count: 1
       }];
       const result = service.calculateInventoryChange(initial, mockItem, -1);
       expect(result).toHaveLength(0);
+      console.log('  ✓ Successfully removed item when count reached zero');
     });
 
-    it('should not exceed available inventory', () => {
+    it('✅ should not exceed available inventory', () => {
+      console.log('  → Testing inventory limits');
       const initial = [{
         ...mockItem,
         count: 5
       }];
       const result = service.calculateInventoryChange(initial, mockItem, 1);
       expect(result).toEqual(initial);
+      console.log('  ✓ Successfully prevented exceeding inventory limits');
     });
   });
 
-  describe('submitEventForm', () => {
-    it('should submit form data successfully', async () => {
+  describe('📤 submitEventForm', () => {
+    console.log('\nTesting form submission...');
+
+    it('✅ should submit form data successfully', async () => {
+      console.log('  → Testing successful form submission');
       const mockFormData = {
         name: 'Test Event',
         customerId: 'customer123',
@@ -120,9 +139,11 @@ describe('EventFormService', () => {
           body: JSON.stringify(mockFormData)
         }
       );
+      console.log('  ✓ Successfully submitted form data');
     });
 
-    it('should handle submission errors', async () => {
+    it('❌ should handle submission errors', async () => {
+      console.log('  → Testing error handling');
       (global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: false
       });
@@ -130,6 +151,11 @@ describe('EventFormService', () => {
       await expect(
         service.submitEventForm({} as any)
       ).rejects.toThrow('Failed to submit event form');
+      console.log('  ✓ Successfully handled submission error');
     });
+  });
+
+  afterAll(() => {
+    console.log('\n✨ All EventFormService tests completed!\n');
   });
 }); 

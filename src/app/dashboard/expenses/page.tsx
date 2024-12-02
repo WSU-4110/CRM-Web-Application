@@ -216,8 +216,6 @@ const Expenses = () => {
     }
   };
 
-
-
   return (
     <div className="min-h-screen w-full p-6">
       <div className="flex justify-between items-center my-6">

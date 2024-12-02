@@ -1,4 +1,3 @@
-
 export class ExpenseForm {
   async fetchInitalData(userId: string) {
     const [expenseData, eventData] = await Promise.all([

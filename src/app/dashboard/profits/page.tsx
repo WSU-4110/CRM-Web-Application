@@ -9,8 +9,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { MoreVertical, Plus } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/app/contexts/AuthContext";
+import { ProfitsService } from "@/lib/profitsService";
 
 const ProfitsPerItemPage = () => {
+  const profitsService = new ProfitsService();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [items, setItems] = useState([]);
   const [currentItem, setCurrentItem] = useState(null);
@@ -23,34 +25,22 @@ const ProfitsPerItemPage = () => {
   });
   const { user } = useAuth();
 
-  // Fetch items when the page loads
   useEffect(() => {
     const fetchItems = async () => {
-      if (!user?.uid) {
-        console.error("User ID is missing");
-        toast({ title: "Error", description: "User ID is required to fetch items.", variant: "destructive" });
-        return;
-      }
-
       try {
-        const response = await fetch(`/api/profit-per-item?userId=${user.uid}`);
-        if (response.ok) {
-          const data = await response.json();
-          setItems(data.items || []);
-        } else {
-          console.error("Failed to fetch items:", response.statusText);
-          toast({ title: "Error", description: "Failed to fetch items", variant: "destructive" });
-        }
+        if (!user?.uid) throw new Error("User ID is missing");
+        const fetchedItems = await profitsService.fetchItems(user.uid);
+        setItems(fetchedItems);
       } catch (error) {
-        console.error("Error fetching items:", error);
-        toast({ title: "Error", description: "Failed to fetch items", variant: "destructive" });
+        console.error(error);
+        toast({ title: "Error", description: error.message, variant: "destructive" });
       }
     };
 
-    fetchItems();
+    if (user?.uid) fetchItems();
   }, [user]);
 
-  const handleDialogChange = (open) => {
+  const handleDialogChange = (open: boolean) => {
     setIsDialogOpen(open);
     if (!open) {
       setCurrentItem(null);
@@ -58,7 +48,7 @@ const ProfitsPerItemPage = () => {
     }
   };
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -66,7 +56,7 @@ const ProfitsPerItemPage = () => {
     }));
   };
 
-  const handleEdit = (item) => {
+  const handleEdit = (item: any) => {
     setCurrentItem(item);
     setFormData({
       type: item.type,
@@ -78,69 +68,35 @@ const ProfitsPerItemPage = () => {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = async (item) => {
-    
-
+  const handleDelete = async (item: any) => {
     try {
-      const response = await fetch(`/api/profit-per-item`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user?.uid, itemId: item.id }),
-      });
-
-      if (response.ok) {
-        const updatedItems = items.filter((i) => i.id !== item.id);
-        setItems(updatedItems);
-        toast({ title: "Success", description: "Item deleted successfully!" });
-        setIsDialogOpen(false);
-      } else {
-        throw new Error("Failed to delete item");
-      }
+      await profitsService.handleDelete(user?.uid, item.id);
+      setItems(items.filter((i) => i.id !== item.id));
+      toast({ title: "Success", description: "Item deleted successfully!" });
+      
+      setIsDialogOpen(false);
+      setCurrentItem(null);
     } catch (error) {
       console.error(error);
-      toast({ title: "Error", description: "Failed to delete item", variant: "destructive" });
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     }
   };
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-
-    const updatedItem = {
-      id: currentItem?.id || Date.now().toString(), // Generate a unique ID
-      ...formData,
-      unitsSold: parseFloat(formData.unitsSold) || 0,
-      revenue: parseFloat(formData.revenue) || 0,
-      cost: parseFloat(formData.cost) || 0,
-      profit: ((parseFloat(formData.revenue) || 0) - (parseFloat(formData.cost) || 0)).toFixed(2),
-      profitPerItem:
-        parseFloat(formData.unitsSold) > 0
-          ? (((parseFloat(formData.revenue) || 0) - (parseFloat(formData.cost) || 0)) / parseFloat(formData.unitsSold)).toFixed(2)
-          : "0.00",
-    };
-
     try {
-      const response = await fetch("/api/profit-per-item", {
-        method: currentItem ? "PUT" : "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user?.uid, item: updatedItem }),
-      });
+      const updatedItem = await profitsService.handleSubmit(user?.uid, formData, currentItem);
+      const updatedItems = currentItem ? items.map((item) => (item.id === currentItem.id ? updatedItem : item)): [...items, updatedItem];
+      setItems(profitsService.sortItemsByProfit(updatedItems));
+      toast({ title: "Success", description: `Item ${currentItem ? "updated" : "added"} successfully!` });
 
-      if (response.ok) {
-        const result = await response.json();
-        const updatedItems = currentItem
-          ? items.map((item) => (item.id === currentItem.id ? updatedItem : item))
-          : [...items, updatedItem];
-        updatedItems.sort((a, b) => parseFloat(b.profitPerItem) - parseFloat(a.profitPerItem)); // Sort by profit per item
-        setItems(updatedItems);
-        toast({ title: "Success", description: `Item ${currentItem ? "updated" : "added"} successfully!` });
-        setIsDialogOpen(false);
-        setCurrentItem(null);
-      } else {
-        throw new Error("Failed to save item");
-      }
+
+      setIsDialogOpen(false);
+      setCurrentItem(null);
+      setFormData({ type: "", itemName: "", unitsSold: "", revenue: "", cost: "" });
     } catch (error) {
       console.error(error);
-      toast({ title: "Error", description: "Failed to save item", variant: "destructive" });
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     }
   };
 
@@ -150,11 +106,8 @@ const ProfitsPerItemPage = () => {
         <h1 className="text-4xl font-bold">Profits Per Item/Service</h1>
         <Button
           onClick={() => setIsDialogOpen(true)}
-          className="bg-black hover:bg-emerald-700 text-white flex items-center gap-2"
-        >
-          <Plus className="h-4 w-4" />
-          New item
-        </Button>
+          className="bg-black hover:bg-emerald-700 text-white flex items-center gap-2">
+            <Plus className="h-4 w-4" />New item</Button>
       </div>
 
       <Table>
@@ -172,7 +125,9 @@ const ProfitsPerItemPage = () => {
         <TableBody>
           {items.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={7} className="text-center text-gray-500">No items found.</TableCell>
+              <TableCell colSpan={7} className="text-center text-gray-500">
+                No items found.
+              </TableCell>
             </TableRow>
           ) : (
             items.map((item) => (
@@ -210,8 +165,7 @@ const ProfitsPerItemPage = () => {
                 value={formData.type}
                 onChange={handleChange}
                 required
-                className="w-full border rounded px-3 py-2"
-              >
+                className="w-full border rounded px-3 py-2">
                 <option value="Item">Item</option>
                 <option value="Service">Service</option>
               </select>

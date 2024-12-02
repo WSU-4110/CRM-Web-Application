@@ -180,17 +180,43 @@ const Expenses = () => {
   //   }
   // };
 
-  const handleEdit = (expense) => {
-    setCurrentExpense(expense);
-    setIsDialogOpen(true);
-  };
+  // const handleEdit = (expense) => {
+  //   setCurrentExpense(expense);
+  //   setIsDialogOpen(true);
+  // };
 
-  const handleDialogChange = (open) => {
-    setIsDialogOpen(open);
-    if (!open) {
-      setCurrentExpense(null);
+  // const handleDialogChange = (open) => {
+  //   setIsDialogOpen(open);
+  //   if (!open) {
+  //     setCurrentExpense(null);
+  //   }
+  // };
+
+  const handleEdit = async (expense) => {
+    try{
+      await expenseForm.handleEdit(expense, setCurrentExpense, setIsDialogOpen);
+    }catch{
+      toast({
+        title: "Error",
+        description: "Failed to edit expense",
+        variant: "destructive",
+      });
+    }
+  }
+
+  const handleDialogChange = async (open) => {
+    try {
+      await expenseForm.handleDialogChange(open, setIsDialogOpen, setCurrentExpense);
+    } catch {
+      toast({
+        title: "Error",
+        description: "Failed to change dialog state",
+        variant: "destructive",
+      });
     }
   };
+
+
 
   return (
     <div className="min-h-screen w-full p-6">

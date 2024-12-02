@@ -14,8 +14,7 @@ import {
   IconLogout2,
   IconTicket,
   IconRobot,
-  IconCoin,
-  IconChartHistogram
+  IconCoin
 
 } from "@tabler/icons-react";
 import Link from "next/link";
@@ -75,19 +74,19 @@ export function SidebarDemo() {
       ),
     },
     {
-      label: "Customers",  
-      href: "/dashboard/customers",  
-      icon: (
-        <IconUsers className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-      ),
+   label: "Customers",  
+    href: "/dashboard/customers",  
+    icon: (
+      <IconUsers className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+    ),
     },
-    {
-      label: "Profits",  
-      href: "/dashboard/profits",  
-      icon: (
-        <IconCoin className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-      ),
-    },
+  {
+    label: "Profits",  
+    href: "/dashboard/profits",  
+    icon: (
+      <IconCoin className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+    ),
+  },
     {
       label: "Profile",
       href: "/dashboard/profile",

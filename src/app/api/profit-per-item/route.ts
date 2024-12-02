@@ -129,5 +129,5 @@ export async function DELETE(request: Request) {
   } catch (error) {
     console.error("Error deleting item:", error);
     return NextResponse.json({ error: "Failed to delete item" }, { status: 500 });
-  } 
+  }
 }

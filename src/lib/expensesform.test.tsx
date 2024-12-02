@@ -165,7 +165,7 @@ describe("ExpenseForm", () => {
   });
 
   describe("🛠 handleEdit", () => {
-    it("✅ should call setCurrentExpense and setIsDialogOpen with correct arguments", () => {
+    it("✅ should call setCurrentExpense and setIsDialogOpen with correct args", () => {
       const expense = { id: "expense-id", name: "Test Expense", amount: 100 };
   
       expenseForm.handleEdit(expense, mockSetCurrentExpense, mockSetIsDialogOpen);

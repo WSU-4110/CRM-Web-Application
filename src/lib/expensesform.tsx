@@ -113,7 +113,7 @@ export class ExpenseForm {
           setCurrentExpense(null);
         }
     }catch(err){
-      console.log("Error : ", err);
+      console.log("Error: ", err);
     }
   }
 }

@@ -194,7 +194,7 @@ const Expenses = () => {
 
   const handleEdit = async (expense) => {
     try{
-      await expenseForm.handleEdit(expense, setCurrentExpense, setIsDialogOpen);
+      expenseForm.handleEdit(expense, setCurrentExpense, setIsDialogOpen);
     }catch{
       toast({
         title: "Error",
@@ -206,7 +206,7 @@ const Expenses = () => {
 
   const handleDialogChange = async (open) => {
     try {
-      await expenseForm.handleDialogChange(open, setIsDialogOpen, setCurrentExpense);
+      expenseForm.handleDialogChange(open, setIsDialogOpen, setCurrentExpense);
     } catch {
       toast({
         title: "Error",

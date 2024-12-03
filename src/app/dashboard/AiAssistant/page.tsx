@@ -72,7 +72,7 @@ const ChatInterface = () => {
           model: 'command-xlarge-nightly', // do not change model no matter what
 
           prompt: currentChat.messages.concat(userMessage).map(msg => msg.content).join('\n'),
-          max_tokens: 100, 
+          max_tokens: 999, 
 
           temperature: 0.7, // spotaneous regulation
 

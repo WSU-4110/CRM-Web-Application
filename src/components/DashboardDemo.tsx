@@ -56,12 +56,14 @@ export function DashboardDemo() {
   const [totalExpenses, setTotalExpenses] = useState(0);
   const [customers, setCustomers] = useState([]);
   const [events, setEvents] = useState([]);
+  const [profitPer, setProfitPer] = useState(0);
   const [loading, setLoading] = useState({
     revenue: true,
     expenses: true,
     profit: true,
     customers: true,
-    events: true
+    events: true,
+    profitPer: true
   });
 
   const [totalProfit, setTotalProfit] = useState(0);
@@ -84,6 +86,21 @@ export function DashboardDemo() {
         setLoading(prev => ({ ...prev, revenue: false }));
       }
     };
+
+    const fetchProfits = async () => {
+      const response = await fetch(`/api/profit-per-item?userId=${user.uid}`)
+      const data = await response.json()
+      let totalProfits = 0;
+       data.items.forEach(item => {
+        totalProfits += parseInt(item.profitPerItem)
+      })
+      console.log(totalProfits)
+      setLoading(prev => ({ ...prev, profitPer: false }));
+      //@ts-ignore
+      setProfitPer(totalProfits);
+      console.log(data)
+      setLoading(prev => ({ ...prev, profitPer: false }));
+    }
 
     const fetchExpenses = async () => {
       try {
@@ -113,6 +130,7 @@ export function DashboardDemo() {
     fetchExpenses();
     fetchCustomers();
     fetchRevenue();
+    fetchProfits();
   }, []);
 
   useEffect(() => {
@@ -151,12 +169,12 @@ export function DashboardDemo() {
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              {loading.revenue ? (
+              {loading.revenue && loading.profitPer? (
                 <div className="text-2xl font-bold">Loading...</div>
               ) : (
                 <>
                   <div className="text-2xl font-bold">
-                    ${totalRevenue.toLocaleString(undefined, {
+                    ${(totalRevenue + profitPer).toLocaleString(undefined, {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
                     })}
@@ -199,12 +217,13 @@ export function DashboardDemo() {
               <CreditCard className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              {loading.profit ? (
+              {loading.profit && loading.profitPer? (
                 <div className="text-2xl font-bold">Loading...</div>
               ) : (
                 <>
                   <div className={`text-2xl font-bold ${totalProfit < 0 ? 'text-red-500' : 'text-green-600'}`}>
-                    ${totalProfit.toLocaleString(undefined, {
+                    {/* @ts-ignore */}
+                    ${(totalProfit + profitPer).toLocaleString(undefined, {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
                     })}

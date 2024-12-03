@@ -198,9 +198,9 @@ const ChatInterface = () => {
     ;
   }, [currentChat?.messages]);
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-screen w-full bg-background">
       {/* Sidebar for larger screens, can be modified if needed lmk */}
-      <div className="hidden md:flex w-64 border-r p-4 flex-col">
+      <div className="hidden md:flex border-r p-4 flex-col">
         <Sidebar />
       </div>
   
@@ -221,11 +221,11 @@ const ChatInterface = () => {
         </SheetContent>
       </Sheet>
       {/* Main content area */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex w-full flex-col">
         {/* Header area */}
-        <div className="h-14 border-b flex items-center px-4">
+        <div className="h-14 border-b w-full flex items-center px-4">
           <div className="md:hidden">
-            <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(true)}>
+            <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(false)}>
               <Menu className="h-5 w-5" />
             </Button>
           </div>
@@ -255,7 +255,7 @@ const ChatInterface = () => {
         )}
         {/* Input area */}
         <div className="p-4 border-t">
-          <div className="w-full flex flex-col gap-4">
+          <div className="w-full flex flex-col gap-10">
             <Textarea
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}

@@ -15,6 +15,11 @@ import {
 import { CustomerService } from "@/lib/CustomerService";
 import React from "react";
 import { useAuth } from "@/app/contexts/AuthContext";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
+import { toast } from "@/hooks/use-toast";
+import { Dialog, DialogContent, DialogTitle } from "@radix-ui/react-dialog";
+import { Label } from "@radix-ui/react-label";
+import { DialogHeader } from "./ui/dialog";
 
 const Customers = () => {
   const auth = useAuth();
@@ -83,98 +88,171 @@ const Customers = () => {
     fetchCustomers();
   }, [auth.user.uid]);
 
+
+  const [isMessageDialogOpen, setIsMessageDialogOpen] = useState(false);
+  const [messageCustomer, setMessageCustomer] = useState(null);
+  const [subject, setSubject] = useState('');
+  const [message, setmessage] = useState('');
+  const handleMessage = (customer) => {
+    setMessageCustomer(customer);
+    setIsMessageDialogOpen(true);
+  };
+
+
+  const handleSendEmail = async (event) => {
+    event.preventDefault();
+    const response = await fetch('/api/send-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: auth.user.email,
+        to: messageCustomer.emailAddress,
+        subject,
+        message,
+      }),
+    });
+    if (response.ok) {
+      toast({
+        title: "Success",
+        description: "Email sent successfully",
+      });
+      setIsMessageDialogOpen(false);
+      setMessageCustomer(null);
+      setSubject('');
+      setmessage('');
+    } else {
+      toast({
+        title: "Error",
+        description: "Failed to send email",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
-    <div className="flex flex-col items-center p-4">
-      <Card className="w-full max-w-5xl shadow-lg">
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle className="text-2xl font-semibold">Customers</CardTitle>
-            <Button
-              className="text-sm py-1 px-3"
-              onClick={() => setShowForm(!showForm)}
-            >
-              {showForm ? "Close" : "Add"}
-            </Button>
-          </div>
-          <CardDescription>Manage and view customer information.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="flex justify-center my-4">
-              <Loader2 className="animate-spin" size={24} />
-            </div>
-          ) : error ? (
-            <Alert variant="destructive" className="mb-4">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          ) : (
-            <>
-              {showForm && (
-                <div className="mb-4">
-                  <h3 className="text-xl font-semibold mb-2">Add a New Customer</h3>
-                  <div className="flex flex-wrap gap-4">
-                    <Input
-                      type="text"
-                      placeholder="First Name"
-                      value={newCustomer.firstName}
-                      onChange={(e) =>
-                        setNewCustomer({ ...newCustomer, firstName: e.target.value })
-                      }
-                    />
-                    <Input
-                      type="text"
-                      placeholder="Last Name"
-                      value={newCustomer.lastName}
-                      onChange={(e) =>
-                        setNewCustomer({ ...newCustomer, lastName: e.target.value })
-                      }
-                    />
-                    <Input
-                      type="email"
-                      placeholder="Email Address"
-                      value={newCustomer.emailAddress}
-                      onChange={(e) =>
-                        setNewCustomer({ ...newCustomer, emailAddress: e.target.value })
-                      }
-                    />
-                    <Input
-                      type="text"
-                      placeholder="Phone Number"
-                      value={newCustomer.phoneNumber}
-                      onChange={(e) =>
-                        setNewCustomer({ ...newCustomer, phoneNumber: e.target.value })
-                      }
-                    />
-                    <Button onClick={handleAddCustomer}>Save</Button>
-                  </div>
+    <div className="min-h-screen w-full p-6">
+      <div className="flex justify-between items-center my-6">
+        <h1 className="text-4xl font-bold">Customers</h1>
+        <div className="flex gap-2">
+          <Button 
+            onClick={() => setShowForm(!showForm)} 
+            className="bg-black text-white flex items-center gap-2">
+            {showForm ? "Close Form" : "Add Customer"}
+          </Button>
+        </div>
+      </div>  
+
+      {loading ? (
+        <div className="flex justify-center my-4">
+          <Loader2 className="animate-spin" size={24} />
+        </div>
+      ) : error ? (
+        <Alert variant="destructive" className="mb-4">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      ) : (
+        <>
+          {showForm && (
+            <div className="mb-6">
+              <h2 className="text-2xl font-semibold mb-4">Add New Customer</h2>
+              <form className="space-y-4" onSubmit={handleAddCustomer}>
+                <div className="grid grid-cols-2 gap-4">
+                  <Input
+                    type="text"
+                    placeholder="First Name"
+                    value={newCustomer.firstName}
+                    onChange={(e) =>
+                      setNewCustomer({ ...newCustomer, firstName: e.target.value })
+                    }
+                  />
+                  <Input
+                    type="text"
+                    placeholder="Last Name"
+                    value={newCustomer.lastName}
+                    onChange={(e) =>
+                      setNewCustomer({ ...newCustomer, lastName: e.target.value })
+                    }
+                  />
+                  <Input
+                    type="email"
+                    placeholder="Email Address"
+                    value={newCustomer.emailAddress}
+                    onChange={(e) =>
+                      setNewCustomer({ ...newCustomer, emailAddress: e.target.value })
+                    }
+                  />
+                  <Input
+                    type="text"
+                    placeholder="Phone Number"
+                    value={newCustomer.phoneNumber}
+                    onChange={(e) =>
+                      setNewCustomer({ ...newCustomer, phoneNumber: e.target.value })
+                    }
+                  />
                 </div>
-              )}
-              <div className="overflow-x-auto">
-                <table className="table-auto w-full text-left border-collapse border border-gray-200">
-                  <thead className="bg-gray-100">
-                    <tr>
-                      <th className="p-2 border border-gray-200">First Name</th>
-                      <th className="p-2 border border-gray-200">Last Name</th>
-                      <th className="p-2 border border-gray-200">Email</th>
-                      <th className="p-2 border border-gray-200">Phone</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {customers.map((customer) => (
-                      <tr key={customer.id} className="hover:bg-gray-50">
-                        <td className="p-2 border border-gray-200">{customer.firstName}</td>
-                        <td className="p-2 border border-gray-200">{customer.lastName}</td>
-                        <td className="p-2 border border-gray-200">{customer.emailAddress}</td>
-                        <td className="p-2 border border-gray-200">{customer.phoneNumber}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </>
+                <Button type="submit" className="mt-4 bg-emerald-700 text-white">
+                  Save Customer
+                </Button>
+              </form>
+            </div>
           )}
-        </CardContent>
-      </Card>
+
+          <Table>
+            <TableHeader>
+              <TableRow className="text-xl">
+                <TableHead>First Name</TableHead>
+                <TableHead>Last Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Phone</TableHead>
+                <TableHead> </TableHead>
+                
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {customers.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center text-gray-500">
+                    No customers found.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                customers.map((customer) => (
+                  <TableRow key={customer.id}>
+                    <TableCell>{customer.firstName}</TableCell>
+                    <TableCell>{customer.lastName}</TableCell>
+                    <TableCell>{customer.emailAddress}</TableCell>
+                    <TableCell>{customer.phoneNumber}</TableCell>
+                    <TableCell className="p-2">
+                      <Button onClick={(e) => { e.stopPropagation(); handleMessage(customer); }}>Message</Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </>
+      )}
+
+
+
+      <Dialog open={isMessageDialogOpen} onOpenChange={setIsMessageDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Send Email to {messageCustomer?.firstName} {messageCustomer?.lastName}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSendEmail} className="space-y-4">
+            <div className="flex flex-col space-y-1">
+              <Label htmlFor="subject">Subject</Label>
+              <Input id="subject" name="subject" value={subject} onChange={(e) => setSubject(e.target.value)} required />
+            </div>
+            <div className="flex flex-col space-y-1">
+              <Label htmlFor="message">Email Content</Label>
+              <textarea id="message" name="message" value={message} onChange={(e) => setmessage(e.target.value)} required className="p-2 border rounded-md" />
+            </div>
+            <Button type="submit" className="mt-4">Send Email</Button>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

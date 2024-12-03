@@ -5,6 +5,8 @@ import { NextResponse } from "next/server";
 export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get("userId");
+
+    console.log("User ID:", userId);
     
     if (!userId) {
         return NextResponse.json({ error: "User ID is required" }, { status: 400 });
@@ -27,6 +29,8 @@ export async function GET(request) {
 
 export async function POST(request) {
     const { userId, calendar } = await request.json();
+
+    console.log("User ID POST:", userId);
 
     if (!userId || !calendar) {
         return NextResponse.json({ error: "User ID and Event data are required" }, { status: 400 });
@@ -56,6 +60,8 @@ export async function POST(request) {
 
 export async function PUT(request: Request) {
     const { userId, calendar } = await request.json();
+
+    console.log("User ID PUT:", userId);
 
     if (!userId || !calendar) {
         return NextResponse.json({ error: "User ID and Event data are required" }, { status: 400 });

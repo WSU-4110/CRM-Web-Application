@@ -16,13 +16,6 @@ const EventForm = ({ onSubmit, onCancel, initialEvent, onDelete }) => {
   const { user } = useAuth()
   const router = useRouter()
 
-  useEffect(() => {
-    if (user) {
-      fetchEvents()
-    } else {
-      router.push('/login')
-    }
-  }, [user, router])
 
   useEffect(() => {
     if (initialEvent) {
@@ -36,17 +29,6 @@ const EventForm = ({ onSubmit, onCancel, initialEvent, onDelete }) => {
     }
   }, [initialEvent])
 
-  const fetchEvents = async () => {
-    const response = await fetch(`/api/calendar?userId=${user.uid}`)
-    if (response.ok) {
-      const data = await response.json()
-      setEvents(data.events || [])
-    } else {
-      toast({
-        variant: 'destructive',
-      })
-    }
-  }
 
   const handleSubmit = async (event) => {
     event.preventDefault()

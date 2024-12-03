@@ -10,7 +10,7 @@ import {
   CardTitle,
   CardContent
 } from '@/components/ui/card';
-
+import { useAuth } from '@/app/contexts/AuthContext';
 
 const CalendarPage = () => { //Calendar page
   const [events, setEvents] = useState<Event[]>([])
@@ -18,7 +18,29 @@ const CalendarPage = () => { //Calendar page
   const [showEventForm, setShowEventForm] = useState(false)
   const [editingEvent, setEditingEvent] = useState<Event | null>(null)
   const [view, setView] = useState<'month' | 'week'>('month')
+  const { user } = useAuth()
   
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+        
+        try {
+            const response = await fetch(`/api/calendar?userId=${user.uid}`);
+            if (!response.ok) throw new Error("Failed to fetch profile");
+
+            const data = await response.json();
+            console.log(data)
+           setEvents(data.events)       
+        }
+
+        catch (error) {
+            console.error("Error fetching profile:", error);
+        }
+};
+
+fetchEvents();
+
+ }, []);
 
   const addEvent = (event: Event) => {
     setEvents([...events, event])
@@ -90,7 +112,7 @@ const CalendarPage = () => { //Calendar page
           </CardHeader>
           <CardContent >
             <ul>
-              {events.map(event => (
+              {events && events.map(event => (
                 <li key={event.id} className="mb-4">
                   <strong>{event.title}</strong>
                   <br />

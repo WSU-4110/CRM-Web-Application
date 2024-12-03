@@ -15,7 +15,7 @@ export async function GET(request) {
         const docSnap = await getDoc(userDocRef);
     
         if (docSnap.exists()) {
-            return NextResponse.json( { events: docSnap.data().events || [] });
+            return NextResponse.json( { events: docSnap.data().calendar || [] });
         } else {
             return NextResponse.json({ error: "No Event found" }, { status: 404 });
         }

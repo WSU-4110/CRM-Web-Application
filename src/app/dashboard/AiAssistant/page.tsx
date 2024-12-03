@@ -203,7 +203,7 @@ const ChatInterface = () => {
       <div className="hidden md:flex w-64 border-r p-4 flex-col">
         <Sidebar />
       </div>
-
+  
       {/* Mobile menu if accessed through mobile device for mobile friendliness */}
       <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
         <SheetTrigger asChild>
@@ -232,13 +232,11 @@ const ChatInterface = () => {
           <h1 className="ml-4 font-semibold">{currentChat?.name || 'No Chat Selected'}</h1>
         </div>
         {/* Messages area */}
-        <div className="flex-1 overflow-y-auto p-4">
-          <div className="max-w-3xl mx-auto space-y-6">
+        <div className="flex-1 overflow-y-auto w-full p-4">
+          <div className="space-y-6">
             {currentChat?.messages.map((message, i) => (
               <Message key={i} message={message} />
-            )
-            )
-            }
+            ))}
             {isLoading && (
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -254,12 +252,10 @@ const ChatInterface = () => {
             <AlertTitle>Error</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>
-        )
-        }
-
+        )}
         {/* Input area */}
         <div className="p-4 border-t">
-          <div className="max-w-3xl mx-auto flex flex-col gap-4">
+          <div className="w-full flex flex-col gap-4">
             <Textarea
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
@@ -268,8 +264,7 @@ const ChatInterface = () => {
                   e.preventDefault();
                   sendMessage();
                 }
-              }
-            }
+              }}
               placeholder="Type your message here..."
               className="min-h-[80px]"
               disabled={isLoading || !currentChat}
@@ -286,8 +281,7 @@ const ChatInterface = () => {
                   <>
                     Send <Send className="ml-2 h-4 w-4" />
                   </>
-                )
-                }
+                )}
               </Button>
             </div>
           </div>

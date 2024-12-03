@@ -35,5 +35,10 @@ jobs:
           STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }}
           EOF
 
+      - name: Debug public env vars
+        run: |
+          echo "Checking NEXT_PUBLIC environment variables:"
+          grep NEXT_PUBLIC .env.local
+
       - name: Run build and tests
         run: npm run build

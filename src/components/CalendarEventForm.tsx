@@ -1,18 +1,28 @@
 import React, { useState, useEffect } from 'react'
 import { Event } from '../types'
 import { X } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/app/contexts/AuthContext'
+import { toast } from '@/hooks/use-toast'
+import { Label } from './ui/label'
+import { Input } from './ui/input'
 
-interface EventFormProps {
-  onSubmit: (event: Event) => void
-  onCancel: () => void
-  initialEvent?: Event | null
-  onDelete?: (id: string) => void
-}
-
-const EventForm: React.FC<EventFormProps> = ({ onSubmit, onCancel, initialEvent, onDelete }) => {
+const EventForm = ({ onSubmit, onCancel, initialEvent, onDelete }) => {
   const [title, setTitle] = useState('')
   const [date, setDate] = useState('')
   const [description, setDescription] = useState('')
+  const [events, setEvents] = useState([])
+
+  const { user } = useAuth()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (user) {
+      fetchEvents()
+    } else {
+      router.push('/login')
+    }
+  }, [user, router])
 
   useEffect(() => {
     if (initialEvent) {
@@ -26,15 +36,53 @@ const EventForm: React.FC<EventFormProps> = ({ onSubmit, onCancel, initialEvent,
     }
   }, [initialEvent])
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    const event: Event = {
+  const fetchEvents = async () => {
+    const response = await fetch(`/api/calendar?userId=${user.uid}`)
+    if (response.ok) {
+      const data = await response.json()
+      setEvents(data.events || [])
+    } else {
+      toast({
+        variant: 'destructive',
+      })
+    }
+  }
+
+  const handleSubmit = async (event) => {
+    event.preventDefault()
+    const eventData = {
       id: initialEvent ? initialEvent.id : Date.now().toString(),
       title,
-      date: date, // Use the date string directly
+      date,
       description,
     }
-    onSubmit(event)
+
+    const response = await fetch(`/api/calendar`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userId: user.uid,
+        calendar: eventData,
+      }),
+    })
+
+    if (response.ok) {
+      const data = await response.json()
+      toast({
+        title: 'Success',
+        description: 'Event added successfully',
+        variant: 'default',
+      })
+      onSubmit(eventData)
+    } else {
+      toast({
+        title: 'Error',
+        description: 'Failed to add event',
+        variant: 'destructive',
+      })
+    }
   }
 
   return (
@@ -49,8 +97,8 @@ const EventForm: React.FC<EventFormProps> = ({ onSubmit, onCancel, initialEvent,
         </button>
         <h2 className="text-xl font-semibold mb-6">{initialEvent ? 'Edit Event' : 'Add Event'}</h2>
         <div className="mb-4">
-          <label htmlFor="title" className="block text-sm font-medium mb-2">Title</label>
-          <input
+          <Label htmlFor="title" className="block text-sm font-medium mb-2">Title</Label>
+          <Input
             type="text"
             id="title"
             value={title}
@@ -60,8 +108,8 @@ const EventForm: React.FC<EventFormProps> = ({ onSubmit, onCancel, initialEvent,
           />
         </div>
         <div className="mb-4">
-          <label htmlFor="date" className="block text-sm font-medium mb-2">Date</label>
-          <input
+          <Label htmlFor="date" className="block text-sm font-medium mb-2">Date</Label>
+          <Input
             type="date"
             id="date"
             value={date}
@@ -71,7 +119,7 @@ const EventForm: React.FC<EventFormProps> = ({ onSubmit, onCancel, initialEvent,
           />
         </div>
         <div className="mb-4">
-          <label htmlFor="description" className="block text-sm font-medium mb-2">Description</label>
+          <Label htmlFor="description" className="block text-sm font-medium mb-2">Description</Label>
           <textarea
             id="description"
             value={description}

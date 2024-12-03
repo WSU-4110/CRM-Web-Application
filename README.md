@@ -20,6 +20,7 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## If Running AI Locally
 Download Ollama from https://ollama.ai/
 run LLM:
 ```bash
@@ -48,4 +49,4 @@ Taaseen Khan (khantaseen)
 Aadil Ibraheem (aibra11)
 
 ## Credits
-The chatbot is the intellectual property of Vercel inc. and all properiety software related to said component belongs to the respectful owners.
+The chatbot is the intellectual property of Vercel And Cohere inc. and all properiety software related to said component belongs to the respectful owners.

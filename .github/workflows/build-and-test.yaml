@@ -1,0 +1,44 @@
+name: Build and Test
+
+on:
+  push:
+    branches:
+      - main
+     
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest 
+    environment: test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18' 
+
+      - name: Install dependencies
+        run: npm install
+      - name: Create .env.local
+        run: |
+          cat << EOF > .env.local
+          NEXT_PUBLIC_BASE_URL="${{ vars.NEXT_PUBLIC_BASE_URL }}"
+          NEXT_PUBLIC_FIREBASE_API_KEY="${{ vars.NEXT_PUBLIC_FIREBASE_API_KEY }}"
+          NEXT_PUBLIC_FIREBASE_APP_ID="${{ vars.NEXT_PUBLIC_FIREBASE_APP_ID }}"
+          NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN="${{ vars.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}"
+          NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID="${{ vars.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}"
+          NEXT_PUBLIC_FIREBASE_PROJECT_ID="${{ vars.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}"
+          NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET="${{ vars.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}"
+          STRIPE_SECRET_KEY="${{ vars.STRIPE_SECRET_KEY }}"
+          EOF
+
+      - name: Debug public env vars
+        run: |
+          echo "Checking NEXT_PUBLIC environment variables:"
+          grep NEXT_PUBLIC .env.local
+
+      - name: Run build and tests
+        run: npm run build

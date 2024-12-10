@@ -1,41 +1,54 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { MoreVertical, Plus } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
-
+import React, { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { MoreVertical, Plus } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/app/contexts/AuthContext";
+import { ProfitsService } from "@/lib/profitsService";
 
 const ProfitsPerItemPage = () => {
+  const profitsService = new ProfitsService();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [items, setItems] = useState([]);
+  const [currentItem, setCurrentItem] = useState(null);
   const [formData, setFormData] = useState({
-    type: '',
-    itemName: '',
-    unitsSold: '',
-    revenue: '',
-    cost: '',
+    type: "",
+    itemName: "",
+    unitsSold: "",
+    revenue: "",
+    cost: "",
   });
+  const { user } = useAuth();
 
-  const revenue = parseFloat(formData.revenue) || 0;
-  const cost = parseFloat(formData.cost) || 0;
-  const unitsSold = parseFloat(formData.unitsSold) || 0;
+  useEffect(() => {
+    const fetchItems = async () => {
+      try {
+        if (!user?.uid) throw new Error("User ID is missing");
+        const fetchedItems = await profitsService.fetchItems(user.uid);
+        setItems(fetchedItems);
+      } catch (error) {
+        console.error(error);
+        toast({ title: "Error", description: error.message, variant: "destructive" });
+      }
+    };
 
-  const profit = revenue - cost;
-  const profitPerItem = unitsSold > 0 ? profit / unitsSold : 0;
+    if (user?.uid) fetchItems();
+  }, [user]);
 
-  const handleDialogChange = (open) => {
+  const handleDialogChange = (open: boolean) => {
     setIsDialogOpen(open);
     if (!open) {
-      setFormData({ type: '', itemName: '', unitsSold: '', revenue: '', cost: '' });
+      setCurrentItem(null);
+      setFormData({ type: "", itemName: "", unitsSold: "", revenue: "", cost: "" });
     }
   };
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -43,94 +56,95 @@ const ProfitsPerItemPage = () => {
     }));
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-  
-    const newItem = {
-      type: formData.type,
-      itemName: formData.itemName,
-      unitsSold: unitsSold.toString(),
-      revenue: revenue.toFixed(2),
-      cost: cost.toFixed(2),
-      profit: profit.toFixed(2),
-      profitPerItem: profitPerItem.toFixed(2),
-    };
-
-    
-  
-    // Send data to Firebase via the API route
-    try {
-      const response = await fetch('/api/profit-per-item', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newItem),
-      });
-  
-      if (response.ok) {
-        const result = await response.json();
-        console.log('Item added to Firebase with ID:', result.id);
-
-        toast({
-          title: "Success",
-          description: "Item added successfully!",
-        });
-
-      } else {
-        console.error('Error adding item to Firebase:', response.statusText);
-      }
-    } catch (error) {
-      console.error('Error adding item to Firebase:', error);
-    }
-  
-    // Update local state to display item on the page
-    const updatedItems = [
-      ...items,
-      newItem,
-    ];
-  
-    updatedItems.sort((a, b) => parseFloat(b.profitPerItem) - parseFloat(a.profitPerItem));
-    setItems(updatedItems);
-    setIsDialogOpen(false);
+  const handleEdit = (item: any) => {
+    setCurrentItem(item);
+    setFormData({
+      type: item.type,
+      itemName: item.itemName,
+      unitsSold: item.unitsSold,
+      revenue: item.revenue,
+      cost: item.cost,
+    });
+    setIsDialogOpen(true);
   };
-  
+
+  const handleDelete = async (item: any) => {
+    try {
+      await profitsService.handleDelete(user?.uid, item.id);
+      setItems(items.filter((i) => i.id !== item.id));
+      toast({ title: "Success", description: "Item deleted successfully!" });
+      
+      setIsDialogOpen(false);
+      setCurrentItem(null);
+    } catch (error) {
+      console.error(error);
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  };
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    try {
+      const updatedItem = await profitsService.handleSubmit(user?.uid, formData, currentItem);
+      const updatedItems = currentItem ? items.map((item) => (item.id === currentItem.id ? updatedItem : item)): [...items, updatedItem];
+      setItems(profitsService.sortItemsByProfit(updatedItems));
+      toast({ title: "Success", description: `Item ${currentItem ? "updated" : "added"} successfully!` });
+
+
+      setIsDialogOpen(false);
+      setCurrentItem(null);
+      setFormData({ type: "", itemName: "", unitsSold: "", revenue: "", cost: "" });
+    } catch (error) {
+      console.error(error);
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  };
 
   return (
     <div className="min-h-screen w-full p-6">
       <div className="flex justify-between items-center my-6">
         <h1 className="text-4xl font-bold">Profits Per Item/Service</h1>
-        <Button 
+        <Button
           onClick={() => setIsDialogOpen(true)}
           className="bg-black hover:bg-emerald-700 text-white flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          New item
-        </Button>
+            <Plus className="h-4 w-4" />New item</Button>
       </div>
 
       <Table>
         <TableHeader>
-          <TableRow className="text-xl">
+          <TableRow>
             <TableHead>Item/Service Name</TableHead>
             <TableHead>Units Sold</TableHead>
             <TableHead>Revenue</TableHead>
             <TableHead>Cost</TableHead>
             <TableHead>Profit</TableHead>
             <TableHead>Profit per Item/Service</TableHead>
+            <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {items.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={6} className="text-center text-gray-500">No items found.</TableCell>
+              <TableCell colSpan={7} className="text-center text-gray-500">
+                No items found.
+              </TableCell>
             </TableRow>
           ) : (
-            items.map((item, index) => (
-              <TableRow key={index}>
-                <TableCell className="text-l">{item.itemName} ({item.type})</TableCell>
-                <TableCell className="text-l">{item.unitsSold}</TableCell>
-                <TableCell className="text-l">${item.revenue}</TableCell>
-                <TableCell className="text-l">${item.cost}</TableCell>
-                <TableCell className="text-l">${item.profit}</TableCell>
-                <TableCell className="text-l">${item.profitPerItem}</TableCell>
+            items.map((item) => (
+              <TableRow key={item.id}>
+                <TableCell>
+                  {item.itemName} {item.type ? `(${item.type})` : ""}
+                </TableCell>
+                <TableCell>{item.unitsSold}</TableCell>
+                <TableCell>${item.revenue}</TableCell>
+                <TableCell>${item.cost}</TableCell>
+                <TableCell>${item.profit}</TableCell>
+                <TableCell>${item.profitPerItem}</TableCell>
+                <TableCell>
+                  <button onClick={() => handleEdit(item)}>
+                    <MoreVertical className="text-gray-400 hover:text-gray-300" />
+                  </button>
+                </TableCell>
               </TableRow>
             ))
           )}
@@ -140,10 +154,9 @@ const ProfitsPerItemPage = () => {
       <Dialog open={isDialogOpen} onOpenChange={handleDialogChange}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add New Item</DialogTitle>
+            <DialogTitle>{currentItem ? "Edit/Delete Item" : "Add New Item"}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
-            
             <div>
               <Label htmlFor="type">Type</Label>
               <select
@@ -157,9 +170,8 @@ const ProfitsPerItemPage = () => {
                 <option value="Service">Service</option>
               </select>
             </div>
-
             <div>
-              <Label htmlFor="itemName">Item Name</Label>
+              <Label htmlFor="itemName">Item/Service Name</Label>
               <Input id="itemName" name="itemName" value={formData.itemName} onChange={handleChange} required />
             </div>
             <div>
@@ -168,13 +180,23 @@ const ProfitsPerItemPage = () => {
             </div>
             <div>
               <Label htmlFor="revenue">Revenue ($)</Label>
-              <Input id="revenue" name="revenue" type="number" step="10.0" value={formData.revenue} onChange={handleChange} required />
+              <Input id="revenue" name="revenue" type="number" value={formData.revenue} onChange={handleChange} required />
             </div>
             <div>
               <Label htmlFor="cost">Cost ($)</Label>
-              <Input id="cost" name="cost" type="number" step="10.0" value={formData.cost} onChange={handleChange} required />
+              <Input id="cost" name="cost" type="number" value={formData.cost} onChange={handleChange} required />
             </div>
-            <Button type="submit" className="bg-black text-white">Add Item</Button>
+            <div className="flex justify-between">
+              <Button type="submit" className="bg-black text-white">
+                {currentItem ? "Update Item" : "Add Item"}
+              </Button>
+              {currentItem && (
+                <Button
+                  type="button"
+                  onClick={() => handleDelete(currentItem)}
+                  className="bg-red-600 text-white">Delete</Button>
+              )}
+            </div>
           </form>
         </DialogContent>
       </Dialog>

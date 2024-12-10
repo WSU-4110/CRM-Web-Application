@@ -1,29 +1,133 @@
-// app/api/profits/route.ts
-import { NextResponse } from 'next/server';
-import { collection, addDoc } from 'firebase/firestore';
-import { db } from '@/firebaseConfig'; // Import the Firestore instance
+import { NextResponse } from "next/server";
+import { doc, getDoc, setDoc, updateDoc, arrayUnion } from "firebase/firestore";
+import { db } from "@/firebaseConfig";
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const userId = searchParams.get("userId");
+
+  if (!userId) {
+    return NextResponse.json({ error: "User ID is required" }, { status: 400 });
+  }
+
+  try {
+    const userDocRef = doc(db, "profits", userId);
+    const docSnap = await getDoc(userDocRef);
+
+    if (docSnap.exists()) {
+      return NextResponse.json({ items: docSnap.data().items || [] });
+    } else {
+      return NextResponse.json({ items: [] }, { status: 200 });
+    }
+  } catch (error) {
+    console.error("Error fetching profits:", error);
+    return NextResponse.json({ error: "Failed to fetch profits" }, { status: 500 });
+  }
+}
 
 export async function POST(request: Request) {
   try {
-    // Get data from the request body
-    const data = await request.json();
+    const { userId, item } = await request.json(); 
 
-    // Reference to the 'profits' collection
-    const profitsCollection = collection(db, "profits");
+    // Validate userId
+    if (!userId || typeof userId !== "string") {
+      return NextResponse.json({ error: "User ID is required" }, { status: 400 });
+    }
 
-    // Create a document with a new ID in the 'profits' collection
-    const docRef = await addDoc(profitsCollection, {
-      type: data.type,
-      itemName: data.itemName,
-      unitsSold: data.unitsSold,
-      revenue: data.revenue,
-      cost: data.cost,
-      profit: data.profit,
-      profitPerItem: data.profitPerItem,
+    // Validate item fields
+    if (
+      !item ||
+      typeof item.id !== "string" ||
+      typeof item.type !== "string" ||
+      typeof item.itemName !== "string" ||
+      typeof item.unitsSold !== "number" ||
+      typeof item.revenue !== "number" ||
+      typeof item.cost !== "number"
+    ) {
+      return NextResponse.json({ error: "Invalid item data" }, { status: 400 });
+    }
+
+    const docRef = doc(db, "profits", userId);
+
+    // Add item to the profits array
+    await updateDoc(docRef, {
+      items: arrayUnion(item),
+    }).catch(async (error) => {
+      if (error.code === "not-found") {
+        // If the document does not exist, create it
+        await setDoc(docRef, { userId, items: [item] });
+      } else {
+        throw error;
+      }
     });
 
-    return NextResponse.json({ message: 'Profit item added successfully', id: docRef.id });
+    return NextResponse.json({ message: "Item added successfully" });
   } catch (error) {
-    return NextResponse.json({ message: 'Error adding profit item', error: error.message }, { status: 500 });
+    console.error("Error updating profits:", error);
+    return NextResponse.json({ error: "Failed to update profits" }, { status: 500 });
+  }
+}
+
+
+
+export async function PUT(request: Request) {
+  const { userId, item } = await request.json();
+
+  if (!userId || !item || !item.id) {
+    return NextResponse.json({ error: "User ID and complete item data are required" }, { status: 400 });
+  }
+
+  try {
+    const docRef = doc(db, "profits", userId);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      const items = docSnap.data().items || [];
+      const itemIndex = items.findIndex((i: any) => i.id === item.id);
+
+      if (itemIndex === -1) {
+        return NextResponse.json({ error: "Item not found" }, { status: 404 });
+      }
+
+      // Update the specific item in the array
+      items[itemIndex] = { ...items[itemIndex], ...item };
+
+      await updateDoc(docRef, {
+        items,
+      });
+
+      return NextResponse.json({ message: "Item updated successfully" });
+    } else {
+      return NextResponse.json({ error: "No profits data found for this user" }, { status: 404 });
+    }
+  } catch (error) {
+    console.error("Error updating item:", error);
+    return NextResponse.json({ error: "Failed to update item" }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: Request) {
+  const { userId, itemId } = await request.json();
+
+  if (!userId || !itemId) {
+    return NextResponse.json({ error: "User ID and Item ID are required" }, { status: 400 });
+  }
+
+  try {
+    const docRef = doc(db, "profits", userId);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      const items = docSnap.data().items || [];
+      const updatedItems = items.filter((item: any) => item.id !== itemId);
+
+      await updateDoc(docRef, { items: updatedItems });
+      return NextResponse.json({ message: "Item deleted successfully" });
+    } else {
+      return NextResponse.json({ error: "No profits data found for this user" }, { status: 404 });
+    }
+  } catch (error) {
+    console.error("Error deleting item:", error);
+    return NextResponse.json({ error: "Failed to delete item" }, { status: 500 });
   }
 }

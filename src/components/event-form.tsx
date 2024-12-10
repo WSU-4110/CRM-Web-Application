@@ -14,7 +14,7 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 import { useAuth } from "@/app/contexts/AuthContext"
 import { Plus, Minus } from "lucide-react"
-import Image from "next/image"
+import { EventFormService } from "@/lib/EventFormService"
 
 interface Customer {
   phone: string
@@ -44,31 +44,16 @@ export function EventForm() {
   const [selectedInventory, setSelectedInventory] = useState<SelectedInventoryItem[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
+  const eventFormService = new EventFormService()
   const auth = useAuth()
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true)
-     
-        const userId =  auth.user.uid
-
-        const customersRes = await fetch(`/api/customers?userId=${userId}`)
-        const customersData = await customersRes.json()
-        
-        if (customersData.error) {
-          throw new Error(customersData.error)
-        }
-        
-        setCustomers(Array.isArray(customersData.customers) ? customersData.customers : [])
-
-    
-        const inventoryRes = await fetch(`/api/inventory?userId=${userId}`)
-        const inventoryData = await inventoryRes.json()
-        console.log(inventoryData)
-        setInventory(Array.isArray(inventoryData.inventory) ? inventoryData.inventory : [])
-
+        const { customers, inventory } = await eventFormService.fetchInitialData(auth.user.uid)
+        setCustomers(customers)
+        setInventory(inventory)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch data')
         console.error('Error fetching data:', err)
@@ -77,33 +62,12 @@ export function EventForm() {
       }
     }
     fetchData()
-  }, [])
+  }, [auth.user.uid])
 
   const handleQuantityChange = (item: InventoryItem, change: number) => {
-    const existingItem = selectedInventory.find(i => i.id === item.id)
-    const currentCount = existingItem?.count || 0
-    const newCount = currentCount + change
-
-    if (newCount === 0) {
-      setSelectedInventory(selectedInventory.filter(i => i.id !== item.id))
-      return
-    }
-
-    if (newCount > parseInt(item.count)) return
-
-    if (existingItem) {
-      setSelectedInventory(selectedInventory.map(i => 
-        i.id === item.id ? { ...i, count: newCount } : i
-      ))
-    } else {
-      setSelectedInventory([...selectedInventory, {
-        id: item.id,
-        name: item.name,
-        count: newCount,
-        price: item.price,
-        image: item.image
-      }])
-    }
+    setSelectedInventory(prevInventory => 
+      eventFormService.calculateInventoryChange(prevInventory, item, change)
+    )
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -111,29 +75,28 @@ export function EventForm() {
     const formData = new FormData(e.target as HTMLFormElement)
     
     const eventData = {
-      name: formData.get("name"),
-      customerId: formData.get("customer"),
+      name: formData.get("name") as string,
+      customerId: formData.get("customer") as string,
       price: parseFloat(formData.get("price") as string),
-      date: formData.get("date"),
-      time: formData.get("time"),
-      address: formData.get("address"),
-      inventory: selectedInventory.length > 0 ? selectedInventory : [],
-      notes: formData.get("notes"),
+      date: formData.get("date") as string,
+      time: formData.get("time") as string,
+      address: formData.get("address") as string,
+      inventory: selectedInventory,
+      notes: formData.get("notes") as string,
       userId: auth.user.uid
     }
-    const userId =  auth.user.uid
-    const response = await fetch(`/api/events`, {
-      method: "POST",
-      body: JSON.stringify(eventData),
-      headers: {
-        "Content-Type": "application/json"
-      }
-    })
 
-    if (response.ok) {
+    try {
+      await eventFormService.submitEventForm(eventData)
       router.push("/dashboard/events")
+    } catch (error) {
+      setError('Failed to submit event form')
+      console.error('Error submitting form:', error)
     }
   }
+
+  if (loading) return <div>Loading...</div>
+  if (error) return <div>Error: {error}</div>
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">

@@ -1,3 +1,16 @@
+'use client'; // assignment 5 version
+import React from 'react';
+import Customers from '@/components/Customers'; 
+const Page = () => {
+  return (
+    <main className="p-4">
+      <Customers />
+    </main>
+  );
+};
+export default Page;
+
+/*
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -151,3 +164,4 @@ const Customers = () => {
 };
 
 export default Customers;
+*/

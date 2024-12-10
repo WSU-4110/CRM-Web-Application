@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { NextRequest } from "next/server";
 import { doc, getDoc, setDoc, updateDoc, arrayUnion } from "firebase/firestore";
 import { db } from "@/firebaseConfig";
 
@@ -16,9 +15,9 @@ export async function GET(request) {
         const docSnap = await getDoc(userDocRef);
     
         if (docSnap.exists()) {
-        return NextResponse.json( {expenses: docSnap.data().expenses || []});
+            return NextResponse.json( {expenses: docSnap.data().expenses || []});
         } else {
-        return NextResponse.json({ customers: [] }, { status: 200 });
+            return NextResponse.json({ customers: [] }, { status: 200 });
         }
     } catch (error) {
         console.error("Error fetching expenses:", error);
